@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Workout Timer</string>
+
+    <!-- Home Screen -->
+    <string name="your_workouts">Your Workouts</string>
+    <string name="no_workouts_yet">No workouts yet.\nTap + to create one.</string>
+    <string name="create_workout">Create Workout</string>
+    <string name="footer_app_name">Workout Timer App</string>
+    <string name="footer_author">by Praveen Ravula</string>
+
+    <!-- Edit Screen -->
+    <string name="edit_workout">Edit Workout</string>
+    <string name="workout_name">Workout Name</string>
+    <string name="rounds">Rounds</string>
+    <string name="exercises">Exercises</string>
+    <string name="work_seconds">Work (seconds)</string>
+    <string name="rest_seconds">Rest (seconds)</string>
+    <string name="structure">Structure</string>
+    <string name="timings">Timings (seconds)</string>
+    <string name="estimated_duration">Estimated duration: %1$dm %2$ds</string>
+    <string name="save_workout">Save Workout</string>
+
+    <!-- Timer Screen -->
+    <string name="get_ready">GET READY</string>
+    <string name="work">WORK</string>
+    <string name="rest">REST</string>
+    <string name="done">DONE!</string>
+    <string name="round_info">Round %1$d / %2$d</string>
+    <string name="abandon_workout">Abandon Workout?</string>
+    <string name="abandon_message">Your progress will not be saved.</string>
+    <string name="abandon">Abandon</string>
+    <string name="continue_workout">Continue</string>
+
+    <!-- Complete Screen -->
+    <string name="workout_complete">Workout Complete!</string>
+    <string name="total_time">Total Time</string>
+    <string name="done_button">Done</string>
+
+    <!-- History / Progress -->
+    <string name="history">History</string>
+    <string name="progress">Progress</string>
+    <string name="no_workouts_completed">No workouts completed yet.</string>
+    <string name="monthly_summary">Monthly Summary</string>
+    <string name="all_workouts">All Workouts</string>
+    <string name="workouts_count">%1$d workout%2$s</string>
+    <string name="this_month">This Month</string>
+    <string name="workouts_label">Workouts</string>
+    <string name="total_time_label">Total Time</string>
+    <string name="breakdown_by_workout">Breakdown by Workout</string>
+    <string name="yearly_overview">Yearly Overview</string>
+    <string name="active_days">Active Days</string>
+    <string name="most_used">Most Used</string>
+    <string name="no_progress_data">Complete a workout to see your progress.</string>
+
+    <!-- Splash -->
+    <string name="splash_title">Workout Timer</string>
+    <string name="splash_author">by Praveen Ravula</string>
+
+    <!-- Common -->
+    <string name="back">Back</string>
+    <string name="start">Start</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
+</resources>
