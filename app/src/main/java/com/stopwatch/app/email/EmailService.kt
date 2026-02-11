@@ -4,7 +4,9 @@ import android.content.Context
 import android.util.Log
 import com.stopwatch.app.data.AppDatabase
 import com.stopwatch.app.data.UserPreferencesRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
@@ -112,65 +114,67 @@ class EmailService(private val context: Context) {
         }
     }
 
-    private fun sendEmailViaAPI(toEmail: String, subject: String, htmlBody: String): Boolean {
-        return try {
-            Log.d(TAG, "API Endpoint: $API_ENDPOINT")
-            Log.d(TAG, "Recipient: $toEmail")
+    private suspend fun sendEmailViaAPI(toEmail: String, subject: String, htmlBody: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                Log.d(TAG, "API Endpoint: $API_ENDPOINT")
+                Log.d(TAG, "Recipient: $toEmail")
 
-            val url = URL(API_ENDPOINT)
-            val connection = url.openConnection() as HttpURLConnection
+                val url = URL(API_ENDPOINT)
+                val connection = url.openConnection() as HttpURLConnection
 
-            connection.requestMethod = "POST"
-            connection.setRequestProperty("Content-Type", "application/json")
-            connection.doOutput = true
-            connection.connectTimeout = 30000 // 30 seconds
-            connection.readTimeout = 30000
+                connection.requestMethod = "POST"
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.doOutput = true
+                connection.connectTimeout = 30000 // 30 seconds
+                connection.readTimeout = 30000
 
-            val jsonBody = JSONObject().apply {
-                put("to", toEmail)
-                put("subject", subject)
-                put("html", htmlBody)
-            }
-
-            Log.d(TAG, "Request body: ${jsonBody.toString().take(200)}...")
-
-            OutputStreamWriter(connection.outputStream).use { writer ->
-                writer.write(jsonBody.toString())
-                writer.flush()
-            }
-
-            val responseCode = connection.responseCode
-            Log.d(TAG, "API Response Code: $responseCode")
-
-            // Read response body
-            val responseBody = try {
-                if (responseCode in 200..299) {
-                    connection.inputStream.bufferedReader().use { it.readText() }
-                } else {
-                    connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "No error body"
+                val jsonBody = JSONObject().apply {
+                    put("to", toEmail)
+                    put("subject", subject)
+                    put("html", htmlBody)
                 }
+
+                Log.d(TAG, "Request body: ${jsonBody.toString().take(200)}...")
+
+                OutputStreamWriter(connection.outputStream).use { writer ->
+                    writer.write(jsonBody.toString())
+                    writer.flush()
+                }
+
+                val responseCode = connection.responseCode
+                Log.d(TAG, "API Response Code: $responseCode")
+
+                // Read response body
+                val responseBody = try {
+                    if (responseCode in 200..299) {
+                        connection.inputStream.bufferedReader().use { it.readText() }
+                    } else {
+                        connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "No error body"
+                    }
+                } catch (e: Exception) {
+                    "Failed to read response: ${e.message}"
+                }
+
+                Log.d(TAG, "API Response Body: $responseBody")
+
+                if (responseCode in 200..299) {
+                    Log.i(TAG, "✅ API Success: $responseCode")
+                    true
+                } else {
+                    Log.e(TAG, "❌ API Error: $responseCode - $responseBody")
+                    false
+                }
+            } catch (e: java.net.UnknownHostException) {
+                Log.e(TAG, "❌ Network Error: Cannot reach API (check internet connection)", e)
+                false
+            } catch (e: java.net.SocketTimeoutException) {
+                Log.e(TAG, "❌ Timeout Error: API took too long to respond", e)
+                false
             } catch (e: Exception) {
-                "Failed to read response: ${e.message}"
-            }
-
-            Log.d(TAG, "API Response Body: $responseBody")
-
-            if (responseCode in 200..299) {
-                Log.i(TAG, "✅ API Success: $responseCode")
-                true
-            } else {
-                Log.e(TAG, "❌ API Error: $responseCode - $responseBody")
+                Log.e(TAG, "❌ Unexpected Error: ${e.javaClass.simpleName}: ${e.message}", e)
                 false
             }
-        } catch (e: java.net.UnknownHostException) {
-            Log.e(TAG, "❌ Network Error: Cannot reach API (check internet connection)", e)
-            false
-        } catch (e: java.net.SocketTimeoutException) {
-            Log.e(TAG, "❌ Timeout Error: API took too long to respond", e)
-            false
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ Unexpected Error: ${e.javaClass.simpleName}: ${e.message}", e)
-            false
         }
     }
 
