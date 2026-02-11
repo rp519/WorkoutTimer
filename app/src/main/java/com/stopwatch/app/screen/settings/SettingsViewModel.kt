@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.stopwatch.app.data.UserPreferencesRepository
+import com.stopwatch.app.email.EmailSummaryWorker
 import com.stopwatch.app.notification.DailyReminderWorker
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -49,6 +50,18 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         true
     )
 
+    val emailSummaryEnabled = preferencesRepository.emailSummaryEnabled.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        false
+    )
+
+    val emailFrequency = preferencesRepository.emailFrequency.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        "weekly"
+    )
+
     fun setKeepScreenOn(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.setKeepScreenOn(enabled)
@@ -88,6 +101,23 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setAchievementNotificationsEnabled(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.setAchievementNotificationsEnabled(enabled)
+        }
+    }
+
+    fun setEmailSummaryEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            preferencesRepository.setEmailSummaryEnabled(enabled)
+            if (enabled) {
+                EmailSummaryWorker.schedule(getApplication())
+            } else {
+                EmailSummaryWorker.cancel(getApplication())
+            }
+        }
+    }
+
+    fun setEmailFrequency(frequency: String) {
+        viewModelScope.launch {
+            preferencesRepository.setEmailFrequency(frequency)
         }
     }
 }

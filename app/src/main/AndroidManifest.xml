@@ -8,6 +8,9 @@
     <!-- Permission for scheduling exact alarms (for daily reminders) -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
 
+    <!-- Permission for sending email summaries via API -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

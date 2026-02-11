@@ -54,9 +54,12 @@ fun SettingsScreen(
     val reminderHour by viewModel.reminderHour.collectAsState()
     val reminderMinute by viewModel.reminderMinute.collectAsState()
     val achievementNotificationsEnabled by viewModel.achievementNotificationsEnabled.collectAsState()
+    val emailSummaryEnabled by viewModel.emailSummaryEnabled.collectAsState()
+    val emailFrequency by viewModel.emailFrequency.collectAsState()
 
     var showEmailDialog by remember { mutableStateOf(false) }
     var showTimePickerDialog by remember { mutableStateOf(false) }
+    var showFrequencyDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -267,6 +270,90 @@ fun SettingsScreen(
                     }
                 }
 
+                // Email Summaries Section Header
+                item {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Email Summaries",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
+                // Email Summary Toggle
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Workout Summary Emails",
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = if (userEmail.isNullOrBlank()) "Set email address first" else "Get periodic workout summaries",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Switch(
+                                checked = emailSummaryEnabled,
+                                onCheckedChange = viewModel::setEmailSummaryEnabled,
+                                enabled = !userEmail.isNullOrBlank()
+                            )
+                        }
+                    }
+                }
+
+                // Email Frequency
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Email Frequency",
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = when (emailFrequency) {
+                                        "weekly" -> "Weekly (max once per week)"
+                                        "biweekly" -> "Bi-weekly (every 2 weeks)"
+                                        "monthly" -> "Monthly (once a month)"
+                                        else -> "Weekly"
+                                    },
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            TextButton(
+                                onClick = { showFrequencyDialog = true },
+                                enabled = emailSummaryEnabled
+                            ) {
+                                Text("Change")
+                            }
+                        }
+                    }
+                }
+
                 item { Spacer(modifier = Modifier.height(8.dp)) }
             }
         }
@@ -291,6 +378,17 @@ fun SettingsScreen(
             onSave = { newEmail ->
                 viewModel.setUserEmail(newEmail.takeIf { it.isNotBlank() })
                 showEmailDialog = false
+            }
+        )
+    }
+
+    if (showFrequencyDialog) {
+        FrequencyPickerDialog(
+            currentFrequency = emailFrequency,
+            onDismiss = { showFrequencyDialog = false },
+            onSelect = { frequency ->
+                viewModel.setEmailFrequency(frequency)
+                showFrequencyDialog = false
             }
         )
     }
@@ -364,4 +462,103 @@ private fun TimePickerDialog(
             }
         }
     )
+}
+
+@Composable
+private fun FrequencyPickerDialog(
+    currentFrequency: String,
+    onDismiss: () -> Unit,
+    onSelect: (String) -> Unit
+) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Email Frequency") },
+        text = {
+            Column {
+                Text(
+                    text = "Choose how often you want to receive workout summaries.\nNote: Emails are limited to once per week maximum.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                FrequencyOption(
+                    text = "Weekly",
+                    description = "Every 7 days",
+                    selected = currentFrequency == "weekly",
+                    onClick = { onSelect("weekly") }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                FrequencyOption(
+                    text = "Bi-weekly",
+                    description = "Every 14 days",
+                    selected = currentFrequency == "biweekly",
+                    onClick = { onSelect("biweekly") }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                FrequencyOption(
+                    text = "Monthly",
+                    description = "Every 30 days",
+                    selected = currentFrequency == "monthly",
+                    onClick = { onSelect("monthly") }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close")
+            }
+        }
+    )
+}
+
+@Composable
+private fun FrequencyOption(
+    text: String,
+    description: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = if (selected)
+                MaterialTheme.colorScheme.primaryContainer
+            else
+                MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (selected)
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    else
+                        MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (selected)
+                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (selected) {
+                Text(
+                    text = "✓",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+        }
+    }
 }

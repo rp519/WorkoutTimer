@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -23,6 +24,9 @@ class UserPreferencesRepository(private val context: Context) {
         val REMINDER_HOUR = intPreferencesKey("reminder_hour")
         val REMINDER_MINUTE = intPreferencesKey("reminder_minute")
         val ACHIEVEMENT_NOTIFICATIONS_ENABLED = booleanPreferencesKey("achievement_notifications_enabled")
+        val EMAIL_SUMMARY_ENABLED = booleanPreferencesKey("email_summary_enabled")
+        val EMAIL_FREQUENCY = stringPreferencesKey("email_frequency") // "weekly", "biweekly", "monthly"
+        val LAST_EMAIL_SENT = longPreferencesKey("last_email_sent")
     }
 
     val keepScreenOn: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -51,6 +55,18 @@ class UserPreferencesRepository(private val context: Context) {
 
     val achievementNotificationsEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[PreferencesKeys.ACHIEVEMENT_NOTIFICATIONS_ENABLED] ?: true
+    }
+
+    val emailSummaryEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.EMAIL_SUMMARY_ENABLED] ?: false
+    }
+
+    val emailFrequency: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.EMAIL_FREQUENCY] ?: "weekly"
+    }
+
+    val lastEmailSent: Flow<Long> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.LAST_EMAIL_SENT] ?: 0L
     }
 
     suspend fun setKeepScreenOn(enabled: Boolean) {
@@ -91,6 +107,24 @@ class UserPreferencesRepository(private val context: Context) {
     suspend fun setAchievementNotificationsEnabled(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.ACHIEVEMENT_NOTIFICATIONS_ENABLED] = enabled
+        }
+    }
+
+    suspend fun setEmailSummaryEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.EMAIL_SUMMARY_ENABLED] = enabled
+        }
+    }
+
+    suspend fun setEmailFrequency(frequency: String) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.EMAIL_FREQUENCY] = frequency
+        }
+    }
+
+    suspend fun setLastEmailSent(timestamp: Long) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LAST_EMAIL_SENT] = timestamp
         }
     }
 }
