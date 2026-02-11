@@ -67,6 +67,11 @@ class SoundManager(context: Context) {
         toneGenerator.startTone(ToneGenerator.TONE_DTMF_1, 100)
     }
 
+    /** Distinctive prep beep 3 seconds before Start/Stop voice-over */
+    fun playPrepBeep() {
+        toneGenerator.startTone(ToneGenerator.TONE_DTMF_8, 300)
+    }
+
     fun release() {
         toneGenerator.release()
         tts?.stop()

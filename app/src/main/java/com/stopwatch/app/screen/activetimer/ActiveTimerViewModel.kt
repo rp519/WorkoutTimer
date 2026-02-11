@@ -75,6 +75,7 @@ class ActiveTimerViewModel(application: Application) : AndroidViewModel(applicat
             totalSecondsInPhase = 3
             secondsRemaining = 3
             soundManager.speakGetReady()
+            soundManager.playPrepBeep()  // Prep beep 3 seconds before "Start"
             while (secondsRemaining > 0) {
                 soundManager.playCountdownBeep()
                 delay(1000L)
@@ -127,7 +128,13 @@ class ActiveTimerViewModel(application: Application) : AndroidViewModel(applicat
 
     private suspend fun countdown(totalSeconds: Int) {
         secondsRemaining = totalSeconds
+        val isBeforeVoiceOver = phase == TimerPhase.WORK
+
         while (secondsRemaining > 0) {
+            // Play prep beep exactly at 3 seconds before "Stop" voice-over
+            if (isBeforeVoiceOver && secondsRemaining == 3) {
+                soundManager.playPrepBeep()
+            }
             if (secondsRemaining <= 3) {
                 soundManager.playWarningBeep()
             }
