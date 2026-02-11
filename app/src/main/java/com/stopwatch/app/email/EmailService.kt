@@ -25,16 +25,26 @@ class EmailService(private val context: Context) {
 
     suspend fun sendWorkoutSummary(): Boolean {
         return try {
+            Log.d(TAG, "Starting email send process...")
+
             val userEmail = preferencesRepository.userEmail.first()
             if (userEmail.isNullOrBlank()) {
-                Log.w(TAG, "No email configured")
+                Log.e(TAG, "❌ FAILED: No email configured")
                 return false
             }
+            Log.d(TAG, "✓ Email configured: $userEmail")
 
             // Get workout data
+            Log.d(TAG, "Fetching workout data...")
             val allHistory = historyDao.getAllHistory().first()
+            Log.d(TAG, "✓ Total workouts: ${allHistory.size}")
+
             val monthlyStats = historyDao.getMonthlyStats().first()
+            Log.d(TAG, "✓ Monthly stats: ${monthlyStats.size} months")
+
             val yearlyStats = historyDao.getYearlyStats().first()
+            Log.d(TAG, "✓ Yearly stats: ${yearlyStats.size} years")
+
             val mostUsedWorkout = historyDao.getMostUsedWorkout(LocalDate.now().year.toString()).first()
 
             // Get current month data
@@ -42,12 +52,14 @@ class EmailService(private val context: Context) {
             val currentYearData = yearlyStats.firstOrNull()
 
             if (currentMonthData == null) {
-                Log.w(TAG, "No workout data available")
+                Log.e(TAG, "❌ FAILED: No workout data available - complete a workout first!")
                 return false
             }
+            Log.d(TAG, "✓ Current month: ${currentMonthData.yearMonth}, workouts: ${currentMonthData.count}")
 
             // Calculate current streak
             val currentStreak = calculateCurrentStreak(allHistory)
+            Log.d(TAG, "✓ Current streak: $currentStreak days")
 
             // Format duration
             val monthlyDuration = formatDuration(currentMonthData.totalSeconds)
@@ -80,11 +92,20 @@ class EmailService(private val context: Context) {
                 monthlyWorkouts = currentMonthData.count,
                 monthlyStreak = currentStreak
             )
+            Log.d(TAG, "✓ Subject: $subject")
+            Log.d(TAG, "✓ HTML generated: ${emailHtml.length} characters")
 
             // Send email via API
-            sendEmailViaAPI(userEmail, subject, emailHtml)
+            Log.d(TAG, "Calling API endpoint...")
+            val success = sendEmailViaAPI(userEmail, subject, emailHtml)
 
-            true
+            if (success) {
+                Log.i(TAG, "✅ SUCCESS: Email sent to $userEmail")
+            } else {
+                Log.e(TAG, "❌ FAILED: API call failed")
+            }
+
+            success
         } catch (e: Exception) {
             Log.e(TAG, "Failed to send email summary", e)
             false
@@ -93,12 +114,17 @@ class EmailService(private val context: Context) {
 
     private fun sendEmailViaAPI(toEmail: String, subject: String, htmlBody: String): Boolean {
         return try {
+            Log.d(TAG, "API Endpoint: $API_ENDPOINT")
+            Log.d(TAG, "Recipient: $toEmail")
+
             val url = URL(API_ENDPOINT)
             val connection = url.openConnection() as HttpURLConnection
 
             connection.requestMethod = "POST"
             connection.setRequestProperty("Content-Type", "application/json")
             connection.doOutput = true
+            connection.connectTimeout = 30000 // 30 seconds
+            connection.readTimeout = 30000
 
             val jsonBody = JSONObject().apply {
                 put("to", toEmail)
@@ -106,17 +132,44 @@ class EmailService(private val context: Context) {
                 put("html", htmlBody)
             }
 
+            Log.d(TAG, "Request body: ${jsonBody.toString().take(200)}...")
+
             OutputStreamWriter(connection.outputStream).use { writer ->
                 writer.write(jsonBody.toString())
                 writer.flush()
             }
 
             val responseCode = connection.responseCode
-            Log.d(TAG, "Email API response: $responseCode")
+            Log.d(TAG, "API Response Code: $responseCode")
 
-            responseCode in 200..299
+            // Read response body
+            val responseBody = try {
+                if (responseCode in 200..299) {
+                    connection.inputStream.bufferedReader().use { it.readText() }
+                } else {
+                    connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "No error body"
+                }
+            } catch (e: Exception) {
+                "Failed to read response: ${e.message}"
+            }
+
+            Log.d(TAG, "API Response Body: $responseBody")
+
+            if (responseCode in 200..299) {
+                Log.i(TAG, "✅ API Success: $responseCode")
+                true
+            } else {
+                Log.e(TAG, "❌ API Error: $responseCode - $responseBody")
+                false
+            }
+        } catch (e: java.net.UnknownHostException) {
+            Log.e(TAG, "❌ Network Error: Cannot reach API (check internet connection)", e)
+            false
+        } catch (e: java.net.SocketTimeoutException) {
+            Log.e(TAG, "❌ Timeout Error: API took too long to respond", e)
+            false
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to call email API", e)
+            Log.e(TAG, "❌ Unexpected Error: ${e.javaClass.simpleName}: ${e.message}", e)
             false
         }
     }

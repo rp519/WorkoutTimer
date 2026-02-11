@@ -3,7 +3,9 @@ package com.stopwatch.app.screen.settings
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import android.util.Log
 import com.stopwatch.app.data.UserPreferencesRepository
+import com.stopwatch.app.email.EmailDebugHelper
 import com.stopwatch.app.email.EmailService
 import com.stopwatch.app.email.EmailSummaryWorker
 import com.stopwatch.app.notification.DailyReminderWorker
@@ -123,11 +125,38 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     // Test function - sends email immediately for testing
-    fun sendTestEmail(onResult: (Boolean) -> Unit) {
+    fun sendTestEmail(onResult: (Boolean, String) -> Unit) {
         viewModelScope.launch {
-            val emailService = EmailService(getApplication())
-            val success = emailService.sendWorkoutSummary()
-            onResult(success)
+            try {
+                // First, show debug info
+                val debugInfo = EmailDebugHelper.debugEmailData(getApplication())
+                Log.d("SettingsViewModel", "=== EMAIL DEBUG START ===")
+                Log.d("SettingsViewModel", debugInfo)
+                Log.d("SettingsViewModel", "=== EMAIL DEBUG END ===")
+
+                // Try to send email
+                val emailService = EmailService(getApplication())
+                val success = emailService.sendWorkoutSummary()
+
+                val message = if (success) {
+                    "Email sent successfully! Check Logcat for details."
+                } else {
+                    "Failed to send email. Check Logcat for error details."
+                }
+
+                onResult(success, message)
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Test email failed", e)
+                onResult(false, "Error: ${e.message}")
+            }
+        }
+    }
+
+    // Debug function - shows what would be in the email
+    fun getDebugInfo(onResult: (String) -> Unit) {
+        viewModelScope.launch {
+            val info = EmailDebugHelper.debugEmailData(getApplication())
+            onResult(info)
         }
     }
 }

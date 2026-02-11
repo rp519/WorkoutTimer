@@ -391,12 +391,12 @@ fun SettingsScreen(
                             androidx.compose.material3.Button(
                                 onClick = {
                                     isSendingTestEmail = true
-                                    viewModel.sendTestEmail { success ->
+                                    viewModel.sendTestEmail { success, message ->
                                         isSendingTestEmail = false
                                         scope.launch {
                                             snackbarHostState.showSnackbar(
-                                                if (success) "✅ Test email sent! Check your inbox."
-                                                else "❌ Failed to send email. Check your email setting and internet connection."
+                                                if (success) "✅ $message"
+                                                else "❌ $message"
                                             )
                                         }
                                     }
