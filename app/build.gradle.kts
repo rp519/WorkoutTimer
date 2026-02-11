@@ -67,4 +67,7 @@ dependencies {
 
     // DataStore for preferences
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    // WorkManager for scheduled notifications
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
 }

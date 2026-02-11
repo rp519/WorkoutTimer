@@ -9,6 +9,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.stopwatch.app.data.AppDatabase
 import com.stopwatch.app.data.model.WorkoutHistory
+import com.stopwatch.app.notification.AchievementTracker
+import com.stopwatch.app.notification.WorkoutNotificationManager
 import com.stopwatch.app.sound.SoundManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -22,6 +24,8 @@ class ActiveTimerViewModel(application: Application) : AndroidViewModel(applicat
     private val planDao = db.workoutPlanDao()
     private val historyDao = db.workoutHistoryDao()
     private val soundManager = SoundManager(application)
+    private val notificationManager = WorkoutNotificationManager(application)
+    private val achievementTracker = AchievementTracker(application)
 
     var planName by mutableStateOf("")
         private set
@@ -181,6 +185,21 @@ class ActiveTimerViewModel(application: Application) : AndroidViewModel(applicat
                 roundsCompleted = totalRounds
             )
         )
+
+        // Show completion notification
+        val totalDuration = getTotalDurationSeconds()
+        val minutes = totalDuration / 60
+        val seconds = totalDuration % 60
+        notificationManager.showWorkoutCompletionNotification(
+            workoutName = planName,
+            durationMinutes = minutes,
+            durationSeconds = seconds,
+            roundsCompleted = totalRounds,
+            exercisesCompleted = totalExercises
+        )
+
+        // Check for achievements
+        achievementTracker.checkAndNotifyAchievements()
     }
 
     override fun onCleared() {
