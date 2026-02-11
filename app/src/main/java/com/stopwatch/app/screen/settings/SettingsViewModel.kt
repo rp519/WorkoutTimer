@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.stopwatch.app.data.UserPreferencesRepository
+import com.stopwatch.app.email.EmailService
 import com.stopwatch.app.email.EmailSummaryWorker
 import com.stopwatch.app.notification.DailyReminderWorker
 import kotlinx.coroutines.flow.SharingStarted
@@ -118,6 +119,15 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setEmailFrequency(frequency: String) {
         viewModelScope.launch {
             preferencesRepository.setEmailFrequency(frequency)
+        }
+    }
+
+    // Test function - sends email immediately for testing
+    fun sendTestEmail(onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val emailService = EmailService(getApplication())
+            val success = emailService.sendWorkoutSummary()
+            onResult(success)
         }
     }
 }
