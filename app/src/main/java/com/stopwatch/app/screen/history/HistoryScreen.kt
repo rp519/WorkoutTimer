@@ -231,6 +231,19 @@ private fun ProgressTab(
                                         color = MaterialTheme.colorScheme.primary
                                     )
                                 }
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = stringResource(R.string.total_rounds_label),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        text = "${currentMonth.totalRounds}",
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
                                 Column(horizontalAlignment = Alignment.End) {
                                     Text(
                                         text = stringResource(R.string.total_time_label),
@@ -311,7 +324,7 @@ private fun MonthlyStatCard(stat: MonthlyStats) {
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = formatDuration(stat.totalSeconds),
+                    text = "${stat.totalRounds} round${if (stat.totalRounds != 1) "s" else ""} · ${formatDuration(stat.totalSeconds)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -337,21 +350,17 @@ private fun HistoryCard(entry: WorkoutHistory) {
                 style = MaterialTheme.typography.titleMedium
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = dateFormat.format(Date(entry.completedAt)),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "%d:%02d".format(minutes, seconds),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium
-                )
-            }
+            Text(
+                text = "${entry.roundsCompleted} round${if (entry.roundsCompleted != 1) "s" else ""} · %d:%02d".format(minutes, seconds),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = dateFormat.format(Date(entry.completedAt)),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
@@ -411,6 +420,7 @@ private fun YearlyStatCard(yearly: YearlyStats, mostUsed: WorkoutBreakdown?) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 StatItem(stringResource(R.string.workouts_label), "${yearly.count}")
+                StatItem(stringResource(R.string.total_rounds_label), "${yearly.totalRounds}")
                 StatItem(stringResource(R.string.total_time_label), formatDuration(yearly.totalSeconds))
                 StatItem(stringResource(R.string.active_days), "${yearly.activeDays}")
             }

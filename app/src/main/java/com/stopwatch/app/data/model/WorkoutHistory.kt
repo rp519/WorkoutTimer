@@ -22,5 +22,6 @@ data class WorkoutHistory(
     val planId: Long?,
     val planName: String,
     val completedAt: Long,
-    val totalDurationSeconds: Int
+    val totalDurationSeconds: Int,
+    val roundsCompleted: Int
 )

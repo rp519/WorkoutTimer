@@ -46,9 +46,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stopwatch.app.R
+import com.stopwatch.app.data.UserPreferencesRepository
+import kotlinx.coroutines.flow.first
 
 // Hardcoded phase colors (independent of theme)
 private val CountdownColor = Color(0xFFFFA726)  // Amber
@@ -63,7 +70,26 @@ fun ActiveTimerScreen(
     onAbandon: () -> Unit,
     viewModel: ActiveTimerViewModel = viewModel()
 ) {
+    val context = LocalContext.current
+    val view = LocalView.current
     var showAbandonDialog by remember { mutableStateOf(false) }
+
+    // Keep screen on during workout if enabled in settings
+    LaunchedEffect(Unit) {
+        val preferencesRepository = UserPreferencesRepository(context)
+        val keepScreenOn = preferencesRepository.keepScreenOn.first()
+
+        if (keepScreenOn) {
+            view.keepScreenOn = true
+        }
+    }
+
+    // Release screen on when leaving
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        onDispose {
+            view.keepScreenOn = false
+        }
+    }
 
     LaunchedEffect(planId) {
         viewModel.load(planId)

@@ -14,4 +14,6 @@ sealed class Screen(val route: String) {
             "workout_complete/$planId/$durationSeconds"
     }
     data object History : Screen("history")
+    data object Settings : Screen("settings")
+    data object EmailOnboarding : Screen("email_onboarding")
 }

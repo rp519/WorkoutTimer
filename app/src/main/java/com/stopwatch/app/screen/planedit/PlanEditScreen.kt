@@ -24,12 +24,55 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stopwatch.app.R
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
+
+@Composable
+private fun NumericTextField(
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    var textFieldValue by remember(value) {
+        mutableStateOf(TextFieldValue(value.toString()))
+    }
+    var hasFocus by remember { mutableStateOf(false) }
+
+    OutlinedTextField(
+        value = textFieldValue,
+        onValueChange = { newValue ->
+            textFieldValue = newValue
+            newValue.text.toIntOrNull()?.let(onValueChange)
+        },
+        label = { Text(label) },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        modifier = modifier.onFocusChanged { focusState ->
+            if (focusState.isFocused && !hasFocus) {
+                // Select all on first focus
+                textFieldValue = textFieldValue.copy(
+                    selection = TextRange(0, textFieldValue.text.length)
+                )
+                hasFocus = true
+            } else if (!focusState.isFocused) {
+                hasFocus = false
+            }
+        }
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,20 +129,16 @@ fun PlanEditScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                OutlinedTextField(
-                    value = viewModel.rounds.toString(),
-                    onValueChange = { viewModel.updateRounds(it.toIntOrNull() ?: 1) },
-                    label = { Text(stringResource(R.string.rounds)) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                NumericTextField(
+                    value = viewModel.rounds,
+                    onValueChange = viewModel::updateRounds,
+                    label = stringResource(R.string.rounds),
                     modifier = Modifier.weight(1f)
                 )
-                OutlinedTextField(
-                    value = viewModel.exerciseCount.toString(),
-                    onValueChange = { viewModel.updateExerciseCount(it.toIntOrNull() ?: 1) },
-                    label = { Text(stringResource(R.string.exercises)) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                NumericTextField(
+                    value = viewModel.exerciseCount,
+                    onValueChange = viewModel::updateExerciseCount,
+                    label = stringResource(R.string.exercises),
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -112,20 +151,16 @@ fun PlanEditScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                OutlinedTextField(
-                    value = viewModel.workSeconds.toString(),
-                    onValueChange = { viewModel.updateWorkSeconds(it.toIntOrNull() ?: 1) },
-                    label = { Text(stringResource(R.string.work_seconds)) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                NumericTextField(
+                    value = viewModel.workSeconds,
+                    onValueChange = viewModel::updateWorkSeconds,
+                    label = stringResource(R.string.work_seconds),
                     modifier = Modifier.weight(1f)
                 )
-                OutlinedTextField(
-                    value = viewModel.restSeconds.toString(),
-                    onValueChange = { viewModel.updateRestSeconds(it.toIntOrNull() ?: 0) },
-                    label = { Text(stringResource(R.string.rest_seconds)) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                NumericTextField(
+                    value = viewModel.restSeconds,
+                    onValueChange = viewModel::updateRestSeconds,
+                    label = stringResource(R.string.rest_seconds),
                     modifier = Modifier.weight(1f)
                 )
             }

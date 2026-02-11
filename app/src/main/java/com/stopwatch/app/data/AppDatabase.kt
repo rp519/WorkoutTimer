@@ -11,7 +11,7 @@ import com.stopwatch.app.data.model.WorkoutPlan
 
 @Database(
     entities = [WorkoutPlan::class, WorkoutHistory::class],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

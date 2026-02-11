@@ -10,7 +10,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.stopwatch.app"
+        applicationId = "com.praveenravula.workouttimer"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -64,4 +64,7 @@ dependencies {
 
     // Splash Screen
     implementation("androidx.core:core-splashscreen:1.0.1")
+
+    // DataStore for preferences
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 }

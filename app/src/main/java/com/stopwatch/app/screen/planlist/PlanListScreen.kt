@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,6 +50,7 @@ fun PlanListScreen(
     onEditPlan: (Long) -> Unit,
     onStartPlan: (Long) -> Unit,
     onOpenHistory: () -> Unit,
+    onOpenSettings: () -> Unit,
     viewModel: PlanListViewModel = viewModel()
 ) {
     val plans by viewModel.plans.collectAsState()
@@ -60,6 +62,9 @@ fun PlanListScreen(
                 actions = {
                     IconButton(onClick = onOpenHistory) {
                         Icon(Icons.Default.History, contentDescription = stringResource(R.string.history))
+                    }
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
                 }
             )

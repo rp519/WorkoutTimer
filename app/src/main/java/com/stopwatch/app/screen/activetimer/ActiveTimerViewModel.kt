@@ -170,7 +170,8 @@ class ActiveTimerViewModel(application: Application) : AndroidViewModel(applicat
                 planId = planId,
                 planName = planName,
                 completedAt = System.currentTimeMillis(),
-                totalDurationSeconds = getTotalDurationSeconds()
+                totalDurationSeconds = getTotalDurationSeconds(),
+                roundsCompleted = totalRounds
             )
         )
     }

@@ -19,7 +19,8 @@ interface WorkoutHistoryDao {
         """
         SELECT strftime('%Y-%m', completedAt / 1000, 'unixepoch', 'localtime') AS yearMonth,
                COUNT(*) AS count,
-               SUM(totalDurationSeconds) AS totalSeconds
+               SUM(totalDurationSeconds) AS totalSeconds,
+               SUM(roundsCompleted) AS totalRounds
         FROM workout_history
         GROUP BY yearMonth
         ORDER BY yearMonth DESC
@@ -45,6 +46,7 @@ interface WorkoutHistoryDao {
         SELECT strftime('%Y', completedAt / 1000, 'unixepoch', 'localtime') AS year,
                COUNT(*) AS count,
                SUM(totalDurationSeconds) AS totalSeconds,
+               SUM(roundsCompleted) AS totalRounds,
                COUNT(DISTINCT strftime('%Y-%m-%d', completedAt / 1000, 'unixepoch', 'localtime')) AS activeDays
         FROM workout_history
         GROUP BY year

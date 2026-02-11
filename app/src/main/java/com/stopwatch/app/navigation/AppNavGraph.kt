@@ -12,16 +12,43 @@ import com.stopwatch.app.screen.planedit.PlanEditScreen
 import com.stopwatch.app.screen.planlist.PlanListScreen
 import com.stopwatch.app.screen.splash.SplashScreen
 import com.stopwatch.app.screen.workoutcomplete.WorkoutCompleteScreen
+import com.stopwatch.app.screen.settings.SettingsScreen
+import com.stopwatch.app.screen.onboarding.EmailOnboardingScreen
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import com.stopwatch.app.data.UserPreferencesRepository
+import androidx.compose.runtime.remember
 
 @Composable
 fun AppNavGraph(navController: NavHostController) {
+    val context = LocalContext.current
+    val preferencesRepository = remember { UserPreferencesRepository(context) }
+    val onboardingCompleted by preferencesRepository.onboardingCompleted.collectAsState(initial = false)
+
     NavHost(navController = navController, startDestination = Screen.Splash.route) {
 
         composable(Screen.Splash.route) {
             SplashScreen(
                 onTimeout = {
-                    navController.navigate(Screen.PlanList.route) {
+                    val nextRoute = if (onboardingCompleted) {
+                        Screen.PlanList.route
+                    } else {
+                        Screen.EmailOnboarding.route
+                    }
+                    navController.navigate(nextRoute) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Screen.EmailOnboarding.route) {
+            EmailOnboardingScreen(
+                onComplete = {
+                    navController.navigate(Screen.PlanList.route) {
+                        popUpTo(Screen.EmailOnboarding.route) { inclusive = true }
                     }
                 }
             )
@@ -40,6 +67,9 @@ fun AppNavGraph(navController: NavHostController) {
                 },
                 onOpenHistory = {
                     navController.navigate(Screen.History.route)
+                },
+                onOpenSettings = {
+                    navController.navigate(Screen.Settings.route)
                 }
             )
         }
@@ -97,6 +127,12 @@ fun AppNavGraph(navController: NavHostController) {
 
         composable(Screen.History.route) {
             HistoryScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Settings.route) {
+            SettingsScreen(
                 onBack = { navController.popBackStack() }
             )
         }
