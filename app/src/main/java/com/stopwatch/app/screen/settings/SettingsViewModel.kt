@@ -123,35 +123,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             preferencesRepository.setEmailFrequency(frequency)
         }
     }
-
-    // Test function - sends email immediately for testing
-    fun sendTestEmail(onResult: (Boolean, String) -> Unit) {
-        viewModelScope.launch {
-            try {
-                // First, show debug info
-                val debugInfo = EmailDebugHelper.debugEmailData(getApplication())
-                Log.d("SettingsViewModel", "=== EMAIL DEBUG START ===")
-                Log.d("SettingsViewModel", debugInfo)
-                Log.d("SettingsViewModel", "=== EMAIL DEBUG END ===")
-
-                // Try to send email
-                val emailService = EmailService(getApplication())
-                val success = emailService.sendWorkoutSummary()
-
-                val message = if (success) {
-                    "Email sent successfully! Check Logcat for details."
-                } else {
-                    "Failed to send email. Check Logcat for error details."
-                }
-
-                onResult(success, message)
-            } catch (e: Exception) {
-                Log.e("SettingsViewModel", "Test email failed", e)
-                onResult(false, "Error: ${e.message}")
-            }
-        }
-    }
-
     // Debug function - shows what would be in the email
     fun getDebugInfo(onResult: (String) -> Unit) {
         viewModelScope.launch {
