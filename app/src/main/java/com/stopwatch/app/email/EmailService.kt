@@ -59,6 +59,10 @@ class EmailService(private val context: Context) {
             }
             Log.d(TAG, "✓ Current month: ${currentMonthData.yearMonth}, workouts: ${currentMonthData.count}")
 
+            // Get workout breakdown by type for current month
+            val workoutBreakdown = historyDao.getMonthlyBreakdown(currentMonthData.yearMonth).first()
+            Log.d(TAG, "✓ Workout breakdown: ${workoutBreakdown.size} different workout types")
+
             // Calculate current streak
             val currentStreak = calculateCurrentStreak(allHistory)
             Log.d(TAG, "✓ Current streak: $currentStreak days")
@@ -113,7 +117,8 @@ class EmailService(private val context: Context) {
                 ytdRounds = currentYearData?.totalRounds ?: 0,
                 ytdDuration = ytdDuration,
                 ytdActiveDays = currentYearData?.activeDays ?: 0,
-                mostUsedWorkout = mostUsedWorkout?.planName
+                mostUsedWorkout = mostUsedWorkout?.planName,
+                workoutBreakdown = workoutBreakdown
             )
 
             if (success) {
@@ -143,7 +148,8 @@ class EmailService(private val context: Context) {
         ytdRounds: Int,
         ytdDuration: String,
         ytdActiveDays: Int,
-        mostUsedWorkout: String?
+        mostUsedWorkout: String?,
+        workoutBreakdown: List<com.stopwatch.app.data.model.WorkoutBreakdown>
     ): Boolean {
         return withContext(Dispatchers.IO) {
             try {
@@ -159,12 +165,35 @@ class EmailService(private val context: Context) {
                 connection.connectTimeout = 30000 // 30 seconds
                 connection.readTimeout = 30000
 
-                // Match the API's expected format with structured workout data
+                // Match the API's expected format with workout data at top level
                 val jsonBody = JSONObject().apply {
                     put("userEmail", userEmail)
                     put("subject", subject)
                     put("html", htmlBody)
-                    // Include structured workout data for the Lambda function
+                    // Add workout data both nested and at top level for compatibility
+                    put("userName", userName)
+                    put("currentMonth", currentMonth)
+                    put("monthlyWorkouts", monthlyWorkouts)
+                    put("monthlyRounds", monthlyRounds)
+                    put("monthlyDuration", monthlyDuration)
+                    put("monthlyStreak", monthlyStreak)
+                    put("ytdWorkouts", ytdWorkouts)
+                    put("ytdRounds", ytdRounds)
+                    put("ytdDuration", ytdDuration)
+                    put("ytdActiveDays", ytdActiveDays)
+                    put("mostUsedWorkout", mostUsedWorkout ?: "None")
+                    // Add workout breakdown array
+                    put("workoutBreakdown", org.json.JSONArray().apply {
+                        workoutBreakdown.forEach { breakdown ->
+                            put(JSONObject().apply {
+                                put("planName", breakdown.planName)
+                                put("count", breakdown.count)
+                                put("totalSeconds", breakdown.totalSeconds)
+                                put("duration", formatDuration(breakdown.totalSeconds))
+                            })
+                        }
+                    })
+                    // Also include nested workoutData for backward compatibility
                     put("workoutData", JSONObject().apply {
                         put("userName", userName)
                         put("currentMonth", currentMonth)
@@ -177,10 +206,22 @@ class EmailService(private val context: Context) {
                         put("ytdDuration", ytdDuration)
                         put("ytdActiveDays", ytdActiveDays)
                         put("mostUsedWorkout", mostUsedWorkout ?: "None")
+                        // Add workout breakdown inside workoutData as well
+                        put("workoutBreakdown", org.json.JSONArray().apply {
+                            workoutBreakdown.forEach { breakdown ->
+                                put(JSONObject().apply {
+                                    put("planName", breakdown.planName)
+                                    put("count", breakdown.count)
+                                    put("totalSeconds", breakdown.totalSeconds)
+                                    put("duration", formatDuration(breakdown.totalSeconds))
+                                })
+                            }
+                        })
                     })
                 }
 
-                Log.d(TAG, "Request body: ${jsonBody.toString().take(200)}...")
+                Log.d(TAG, "Request body (first 200 chars): ${jsonBody.toString().take(200)}...")
+                Log.d(TAG, "workoutData: ${jsonBody.getJSONObject("workoutData")}")
 
                 OutputStreamWriter(connection.outputStream).use { writer ->
                     writer.write(jsonBody.toString())
