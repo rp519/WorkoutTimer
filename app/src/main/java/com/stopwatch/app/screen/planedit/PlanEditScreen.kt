@@ -46,10 +46,18 @@ private fun NumericTextField(
     label: String,
     modifier: Modifier = Modifier
 ) {
-    var textFieldValue by remember(value) {
+    var textFieldValue by remember {
         mutableStateOf(TextFieldValue(value.toString()))
     }
     var hasFocus by remember { mutableStateOf(false) }
+
+    // Sync external value changes only when not focused
+    LaunchedEffect(value) {
+        val currentNumber = textFieldValue.text.toIntOrNull()
+        if (currentNumber != value && !hasFocus) {
+            textFieldValue = TextFieldValue(value.toString())
+        }
+    }
 
     OutlinedTextField(
         value = textFieldValue,
