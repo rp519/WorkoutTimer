@@ -97,9 +97,24 @@ class EmailService(private val context: Context) {
             Log.d(TAG, "✓ Subject: $subject")
             Log.d(TAG, "✓ HTML generated: ${emailHtml.length} characters")
 
-            // Send email via API
+            // Send email via API with structured workout data
             Log.d(TAG, "Calling API endpoint...")
-            val success = sendEmailViaAPI(userEmail, subject, emailHtml)
+            val success = sendEmailViaAPI(
+                userEmail = userEmail,
+                subject = subject,
+                htmlBody = emailHtml,
+                userName = userName,
+                currentMonth = currentMonth,
+                monthlyWorkouts = currentMonthData.count,
+                monthlyRounds = currentMonthData.totalRounds,
+                monthlyDuration = monthlyDuration,
+                monthlyStreak = currentStreak,
+                ytdWorkouts = currentYearData?.count ?: 0,
+                ytdRounds = currentYearData?.totalRounds ?: 0,
+                ytdDuration = ytdDuration,
+                ytdActiveDays = currentYearData?.activeDays ?: 0,
+                mostUsedWorkout = mostUsedWorkout?.planName
+            )
 
             if (success) {
                 Log.i(TAG, "✅ SUCCESS: Email sent to $userEmail")
@@ -114,11 +129,26 @@ class EmailService(private val context: Context) {
         }
     }
 
-    private suspend fun sendEmailViaAPI(toEmail: String, subject: String, htmlBody: String): Boolean {
+    private suspend fun sendEmailViaAPI(
+        userEmail: String,
+        subject: String,
+        htmlBody: String,
+        userName: String,
+        currentMonth: String,
+        monthlyWorkouts: Int,
+        monthlyRounds: Int,
+        monthlyDuration: String,
+        monthlyStreak: Int,
+        ytdWorkouts: Int,
+        ytdRounds: Int,
+        ytdDuration: String,
+        ytdActiveDays: Int,
+        mostUsedWorkout: String?
+    ): Boolean {
         return withContext(Dispatchers.IO) {
             try {
                 Log.d(TAG, "API Endpoint: $API_ENDPOINT")
-                Log.d(TAG, "Recipient: $toEmail")
+                Log.d(TAG, "Recipient: $userEmail")
 
                 val url = URL(API_ENDPOINT)
                 val connection = url.openConnection() as HttpURLConnection
@@ -129,10 +159,25 @@ class EmailService(private val context: Context) {
                 connection.connectTimeout = 30000 // 30 seconds
                 connection.readTimeout = 30000
 
+                // Match the API's expected format with structured workout data
                 val jsonBody = JSONObject().apply {
-                    put("to", toEmail)
+                    put("userEmail", userEmail)
                     put("subject", subject)
                     put("html", htmlBody)
+                    // Include structured workout data for the Lambda function
+                    put("workoutData", JSONObject().apply {
+                        put("userName", userName)
+                        put("currentMonth", currentMonth)
+                        put("monthlyWorkouts", monthlyWorkouts)
+                        put("monthlyRounds", monthlyRounds)
+                        put("monthlyDuration", monthlyDuration)
+                        put("monthlyStreak", monthlyStreak)
+                        put("ytdWorkouts", ytdWorkouts)
+                        put("ytdRounds", ytdRounds)
+                        put("ytdDuration", ytdDuration)
+                        put("ytdActiveDays", ytdActiveDays)
+                        put("mostUsedWorkout", mostUsedWorkout ?: "None")
+                    })
                 }
 
                 Log.d(TAG, "Request body: ${jsonBody.toString().take(200)}...")
