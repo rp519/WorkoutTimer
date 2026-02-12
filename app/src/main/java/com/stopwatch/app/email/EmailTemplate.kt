@@ -13,7 +13,8 @@ object EmailTemplate {
         ytdRounds: Int,
         ytdDuration: String,
         ytdActiveDays: Int,
-        mostUsedWorkout: String?
+        mostUsedWorkout: String?,
+        workoutBreakdown: List<com.stopwatch.app.data.model.WorkoutBreakdown> = emptyList()
     ): String {
         val displayName = userName ?: "Champion"
 
@@ -91,6 +92,47 @@ object EmailTemplate {
                             </table>
                         </td>
                     </tr>
+
+                    <!-- Workout Breakdown Section -->
+                    ${if (workoutBreakdown.isNotEmpty()) """
+                    <tr>
+                        <td style="padding: 20px 30px;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #F3E5F5; border-radius: 12px; padding: 20px;">
+                                <tr>
+                                    <td>
+                                        <h2 style="margin: 0 0 15px 0; color: #6A1B9A; font-size: 20px; font-weight: 600;">📊 Workout Breakdown</h2>
+                                        ${workoutBreakdown.mapIndexed { index, workout ->
+                                            val duration = formatDuration(workout.totalSeconds)
+                                            val badge = when {
+                                                workout.count > 10 -> "🔥"
+                                                workout.count > 5 -> "⭐"
+                                                else -> "✓"
+                                            }
+                                            """
+                                            <div style="background-color: #ffffff; border-radius: 8px; padding: 15px; margin-bottom: 10px; border-left: 4px solid #6A1B9A;">
+                                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                                    <tr>
+                                                        <td width="40" style="vertical-align: middle;">
+                                                            <div style="font-size: 20px; font-weight: 700; color: #6A1B9A; text-align: center;">#${index + 1}</div>
+                                                        </td>
+                                                        <td style="vertical-align: middle; padding-left: 10px;">
+                                                            <div style="font-size: 16px; font-weight: 600; color: #333333;">${workout.planName}</div>
+                                                            <div style="font-size: 13px; color: #666666; margin-top: 2px;">${workout.count} session${if (workout.count != 1) "s" else ""} • $duration</div>
+                                                        </td>
+                                                        <td width="40" style="vertical-align: middle; text-align: right;">
+                                                            <div style="font-size: 24px;">$badge</div>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            """
+                                        }.joinToString("")}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    """ else ""}
 
                     <!-- Year-to-Date Section -->
                     <tr>
@@ -194,6 +236,16 @@ object EmailTemplate {
             workouts >= 8 -> "Consistency is key, and you've got it! Each workout brings you closer to your goals! 🎯"
             workouts > 0 -> "Every workout counts, and you're making them count! Keep showing up for yourself! 💚"
             else -> "Your next workout is your next victory. Let's make it happen! 🚀"
+        }
+    }
+
+    private fun formatDuration(totalSeconds: Int): String {
+        val hours = totalSeconds / 3600
+        val minutes = (totalSeconds % 3600) / 60
+        return when {
+            hours > 0 -> "${hours}h ${minutes}m"
+            minutes > 0 -> "${minutes}m"
+            else -> "${totalSeconds}s"
         }
     }
 }

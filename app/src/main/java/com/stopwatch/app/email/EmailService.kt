@@ -78,7 +78,7 @@ class EmailService(private val context: Context) {
             val userName = userEmail.substringBefore("@").split(".", "_", "-")
                 .joinToString(" ") { it.capitalize() }
 
-            // Generate email HTML
+            // Generate email HTML with workout breakdown
             val emailHtml = EmailTemplate.generateWorkoutSummaryEmail(
                 userName = userName,
                 currentMonth = currentMonth,
@@ -90,7 +90,8 @@ class EmailService(private val context: Context) {
                 ytdRounds = currentYearData?.totalRounds ?: 0,
                 ytdDuration = ytdDuration,
                 ytdActiveDays = currentYearData?.activeDays ?: 0,
-                mostUsedWorkout = mostUsedWorkout?.planName
+                mostUsedWorkout = mostUsedWorkout?.planName,
+                workoutBreakdown = workoutBreakdown
             )
 
             // Generate subject line
@@ -221,7 +222,12 @@ class EmailService(private val context: Context) {
                 }
 
                 Log.d(TAG, "Request body (first 200 chars): ${jsonBody.toString().take(200)}...")
-                Log.d(TAG, "workoutData: ${jsonBody.getJSONObject("workoutData")}")
+                Log.d(TAG, "workoutBreakdown count: ${workoutBreakdown.size}")
+                workoutBreakdown.forEach {
+                    Log.d(TAG, "  - ${it.planName}: ${it.count} sessions, ${formatDuration(it.totalSeconds)}")
+                }
+                Log.d(TAG, "workoutData object: ${jsonBody.getJSONObject("workoutData")}")
+                Log.d(TAG, "workoutBreakdown in JSON: ${jsonBody.getJSONArray("workoutBreakdown")}")
 
                 OutputStreamWriter(connection.outputStream).use { writer ->
                     writer.write(jsonBody.toString())
