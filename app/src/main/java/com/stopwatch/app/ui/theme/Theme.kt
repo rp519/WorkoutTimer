@@ -8,19 +8,50 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF4DB6AC),       // teal
-    secondary = Color(0xFFFF8A65),     // soft coral
-    tertiary = Color(0xFFFFD54F),      // gold
+    primary = PrimaryGradientEnd,           // Light blue
+    onPrimary = Color.White,
+    primaryContainer = PrimaryGradientStart, // Deep blue
+    onPrimaryContainer = Color.White,
+
+    secondary = SecondaryBlue,
+    onSecondary = TextPrimaryDark,
+
+    tertiary = AccentAmber,
+    onTertiary = Color.White,
+
     background = Color(0xFF0D1117),
+    onBackground = Color.White,
+
     surface = Color(0xFF161B22),
+    onSurface = Color.White,
+
+    surfaceVariant = Color(0xFF1C2128),
+    onSurfaceVariant = Color(0xFFB0B8C0),
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF00897B),       // teal
-    secondary = Color(0xFFEF6C57),     // soft coral
-    tertiary = Color(0xFFFFC107),      // gold
-    background = Color(0xFFFAFAFA),
-    surface = Color(0xFFFFFFFF),
+    primary = PrimaryGradientStart,          // Deep blue
+    onPrimary = Color.White,
+    primaryContainer = PrimaryGradientEnd,   // Light blue
+    onPrimaryContainer = TextPrimaryDark,
+
+    secondary = SecondaryBlue,
+    onSecondary = TextPrimaryDark,
+
+    tertiary = AccentAmber,
+    onTertiary = Color.White,
+
+    background = BackgroundLightBlue,        // Light blue background
+    onBackground = TextPrimaryDark,
+
+    surface = Color.White,
+    onSurface = TextPrimaryDark,
+
+    surfaceVariant = Color(0xFFF0F4F8),
+    onSurfaceVariant = TextSecondary,
+
+    error = Color(0xFFD32F2F),
+    onError = Color.White,
 )
 
 @Composable

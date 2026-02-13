@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,12 +37,72 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stopwatch.app.R
 import com.stopwatch.app.data.model.WorkoutPlan
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.text.font.FontWeight
+import com.stopwatch.app.ui.theme.Gradients
+
+@Composable
+private fun QuickTimerCard(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Gradients.Primary)  // Premium blue gradient
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Timer,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.padding(8.dp)
+                )
+                Column {
+                    Text(
+                        text = "Quick Timer",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Text(
+                        text = "Simple countdown timer",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
+                }
+            }
+            Icon(
+                imageVector = Icons.Default.PlayArrow,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.padding(8.dp)
+            )
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,6 +112,7 @@ fun PlanListScreen(
     onStartPlan: (Long) -> Unit,
     onOpenHistory: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenQuickTimer: () -> Unit,
     viewModel: PlanListViewModel = viewModel()
 ) {
     val plans by viewModel.plans.collectAsState()
@@ -107,6 +169,12 @@ fun PlanListScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     item { Spacer(modifier = Modifier.height(4.dp)) }
+
+                    // Quick Timer button
+                    item {
+                        QuickTimerCard(onClick = onOpenQuickTimer)
+                    }
+
                     items(plans, key = { it.id }) { plan ->
                         PlanCard(
                             plan = plan,
@@ -167,11 +235,18 @@ private fun PlanCard(
                     text = plan.name,
                     style = MaterialTheme.typography.titleMedium
                 )
-                Text(
-                    text = "${plan.rounds} round${if (plan.rounds != 1) "s" else ""} · ${plan.exerciseCount} exercise${if (plan.exerciseCount != 1) "s" else ""} · ${plan.workSeconds}s work / ${plan.restSeconds}s rest",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier
+                        .background(Color(0xFFFFFFF0), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "${plan.rounds} round${if (plan.rounds != 1) "s" else ""} · ${plan.exerciseCount} exercise${if (plan.exerciseCount != 1) "s" else ""} · ${plan.workSeconds}s work / ${plan.restSeconds}s rest",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Black.copy(alpha = 0.87f)
+                    )
+                }
             }
             IconButton(onClick = onStart) {
                 Icon(
