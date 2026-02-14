@@ -38,6 +38,7 @@ class ExerciseLibraryInitializer(private val context: Context) {
 
     /**
      * Scan the assets/exercises folder and build Exercise objects
+     * Handles nested subcategory structure: exercises/CATEGORY/Subcategory/exercise.webp
      */
     private fun scanExercisesFromAssets(): List<Exercise> {
         val exercises = mutableListOf<Exercise>()
@@ -45,41 +46,63 @@ class ExerciseLibraryInitializer(private val context: Context) {
 
         try {
             // List all category folders in assets/exercises/
-            val categories = assetManager.list("exercises")?.filter { folder ->
-                // Filter out non-folder items (like README.txt)
-                try {
-                    val files = assetManager.list("exercises/$folder")
-                    !files.isNullOrEmpty()
-                } catch (e: Exception) {
-                    false
-                }
-            } ?: emptyList()
+            val categories = assetManager.list("exercises") ?: emptyArray()
 
-            // For each category, scan for .webp files
             for (categoryFolder in categories) {
-                val category = formatCategoryName(categoryFolder)
-                val files = assetManager.list("exercises/$categoryFolder") ?: emptyArray()
+                // Skip non-directories
+                if (categoryFolder.contains(".")) continue
 
-                for (fileName in files) {
-                    if (fileName.endsWith(".webp", ignoreCase = true)) {
-                        val exerciseName = formatExerciseName(fileName)
-                        val imagePath = "exercises/$categoryFolder/$fileName"
+                // List items in category folder (could be subcategories or direct files)
+                val categoryItems = assetManager.list("exercises/$categoryFolder") ?: emptyArray()
+
+                for (item in categoryItems) {
+                    if (item.endsWith(".webp", ignoreCase = true)) {
+                        // Direct exercise file in category folder (no subcategory)
+                        val exerciseName = formatExerciseName(item)
+                        val imagePath = "exercises/$categoryFolder/$item"
 
                         exercises.add(
                             Exercise(
                                 name = exerciseName,
-                                category = category,
+                                category = categoryFolder,
+                                subcategory = "",
                                 imagePath = imagePath
                             )
                         )
+                    } else {
+                        // Check if it's a subcategory folder
+                        try {
+                            val subcategoryFiles = assetManager.list("exercises/$categoryFolder/$item") ?: emptyArray()
+
+                            for (fileName in subcategoryFiles) {
+                                if (fileName.endsWith(".webp", ignoreCase = true)) {
+                                    val exerciseName = formatExerciseName(fileName)
+                                    val imagePath = "exercises/$categoryFolder/$item/$fileName"
+
+                                    exercises.add(
+                                        Exercise(
+                                            name = exerciseName,
+                                            category = categoryFolder,
+                                            subcategory = item,
+                                            imagePath = imagePath
+                                        )
+                                    )
+                                }
+                            }
+                        } catch (e: Exception) {
+                            // Not a directory, skip
+                        }
                     }
                 }
             }
+
+            Log.d(TAG, "Scanned exercises: ${exercises.size} found")
+            Log.d(TAG, "Categories: ${exercises.map { it.category }.distinct().sorted()}")
         } catch (e: Exception) {
             Log.e(TAG, "Error scanning assets folder", e)
         }
 
-        return exercises.sortedWith(compareBy({ it.category }, { it.name }))
+        return exercises.sortedWith(compareBy({ it.category }, { it.subcategory }, { it.name }))
     }
 
     /**
