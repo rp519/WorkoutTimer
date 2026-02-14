@@ -99,12 +99,12 @@ fun ExerciseSubcategoriesScreen(
                     }
                 }
                 else -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
                     item {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
@@ -122,7 +122,8 @@ fun ExerciseSubcategoriesScreen(
                         )
                     }
 
-                    item { Spacer(modifier = Modifier.height(16.dp)) }
+                        item { Spacer(modifier = Modifier.height(16.dp)) }
+                    }
                 }
             }
         }

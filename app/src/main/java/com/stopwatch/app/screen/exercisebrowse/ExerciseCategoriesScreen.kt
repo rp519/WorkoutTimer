@@ -98,22 +98,23 @@ fun ExerciseCategoriesScreen(
                     }
                 }
                 else -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    item { Spacer(modifier = Modifier.height(8.dp)) }
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        item { Spacer(modifier = Modifier.height(8.dp)) }
 
-                    items(categories) { category ->
-                        CategoryCard(
-                            category = category,
-                            onClick = { onCategoryClick(category.name) }
-                        )
+                        items(categories) { category ->
+                            CategoryCard(
+                                category = category,
+                                onClick = { onCategoryClick(category.name) }
+                            )
+                        }
+
+                        item { Spacer(modifier = Modifier.height(16.dp)) }
                     }
-
-                    item { Spacer(modifier = Modifier.height(16.dp)) }
                 }
             }
         }
