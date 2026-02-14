@@ -9,7 +9,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,11 +41,13 @@ fun ExerciseSubcategoriesScreen(
     viewModel: ExerciseBrowseViewModel = viewModel()
 ) {
     var subcategories by remember { mutableStateOf<List<ExerciseSubcategory>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
     val categoryDisplayName = ExerciseCategories.getDisplayName(category)
 
     // Load subcategories when screen opens
     LaunchedEffect(category) {
         subcategories = viewModel.getSubcategories(category)
+        isLoading = false
     }
 
     Scaffold(
@@ -64,19 +75,30 @@ fun ExerciseSubcategoriesScreen(
                     )
                 )
         ) {
-            if (subcategories.isEmpty()) {
-                // Loading or no subcategories
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "No subcategories found",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+            when {
+                isLoading -> {
+                    // Loading state
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
-            } else {
+                subcategories.isEmpty() -> {
+                    // Empty state
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No subcategories found",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                else -> {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()

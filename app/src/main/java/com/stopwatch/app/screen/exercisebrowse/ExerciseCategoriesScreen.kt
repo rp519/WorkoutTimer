@@ -35,11 +35,12 @@ fun ExerciseCategoriesScreen(
     viewModel: ExerciseBrowseViewModel = viewModel()
 ) {
     var categories by remember { mutableStateOf<List<ExerciseCategory>>(emptyList()) }
-    val scope = rememberCoroutineScope()
+    var isLoading by remember { mutableStateOf(true) }
 
     // Load categories when screen opens
     LaunchedEffect(Unit) {
         categories = viewModel.getCategories()
+        isLoading = false
     }
 
     Scaffold(
@@ -73,15 +74,30 @@ fun ExerciseCategoriesScreen(
                     )
                 )
         ) {
-            if (categories.isEmpty()) {
-                // Loading state
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
+            when {
+                isLoading -> {
+                    // Loading state
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
-            } else {
+                categories.isEmpty() -> {
+                    // Empty state (should rarely happen)
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No exercises found",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                else -> {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
