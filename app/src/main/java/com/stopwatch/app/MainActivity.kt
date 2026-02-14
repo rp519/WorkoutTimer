@@ -12,9 +12,12 @@ import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
+import com.stopwatch.app.data.AppDatabase
 import com.stopwatch.app.data.ExerciseLibraryInitializer
 import com.stopwatch.app.data.UserPreferencesRepository
 import com.stopwatch.app.navigation.AppNavGraph
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.stopwatch.app.notification.DailyReminderWorker
 import com.stopwatch.app.notification.WorkoutNotificationManager
 import com.stopwatch.app.ui.theme.WorkoutTimerTheme
@@ -39,9 +42,17 @@ class MainActivity : ComponentActivity() {
         // Initialize notification channels
         WorkoutNotificationManager(this)
 
-        // Initialize exercise library from assets
+        // Initialize and preload exercise library in background
         lifecycleScope.launch {
+            // Initialize from assets if needed
             ExerciseLibraryInitializer(applicationContext).initializeIfNeeded()
+
+            // Preload exercises in background so they're ready when user navigates
+            withContext(Dispatchers.IO) {
+                val exerciseDao = AppDatabase.getInstance(applicationContext).exerciseDao()
+                // Trigger a query to warm up the cache
+                exerciseDao.getAllCategories()
+            }
         }
 
         // Request notification permission for Android 13+
