@@ -10,10 +10,11 @@ import com.stopwatch.app.screen.activetimer.ActiveTimerScreen
 import com.stopwatch.app.screen.history.HistoryScreen
 import com.stopwatch.app.screen.planedit.PlanEditScreen
 import com.stopwatch.app.screen.planlist.PlanListScreen
-import com.stopwatch.app.screen.splash.SplashScreen
+import com.stopwatch.app.screen.quicktimer.QuickTimerScreen
 import com.stopwatch.app.screen.workoutcomplete.WorkoutCompleteScreen
 import com.stopwatch.app.screen.settings.SettingsScreen
 import com.stopwatch.app.screen.onboarding.EmailOnboardingScreen
+import com.stopwatch.app.screen.splash.SplashScreen
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -32,12 +33,13 @@ fun AppNavGraph(navController: NavHostController) {
         composable(Screen.Splash.route) {
             SplashScreen(
                 onTimeout = {
-                    val nextRoute = if (onboardingCompleted) {
+                    // Navigate to appropriate screen after splash
+                    val destination = if (onboardingCompleted) {
                         Screen.PlanList.route
                     } else {
                         Screen.EmailOnboarding.route
                     }
-                    navController.navigate(nextRoute) {
+                    navController.navigate(destination) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 }
@@ -70,6 +72,9 @@ fun AppNavGraph(navController: NavHostController) {
                 },
                 onOpenSettings = {
                     navController.navigate(Screen.Settings.route)
+                },
+                onOpenQuickTimer = {
+                    navController.navigate(Screen.QuickTimer.route)
                 }
             )
         }
@@ -133,6 +138,12 @@ fun AppNavGraph(navController: NavHostController) {
 
         composable(Screen.Settings.route) {
             SettingsScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.QuickTimer.route) {
+            QuickTimerScreen(
                 onBack = { navController.popBackStack() }
             )
         }

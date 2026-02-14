@@ -116,6 +116,7 @@ fun PlanListScreen(
     viewModel: PlanListViewModel = viewModel()
 ) {
     val plans by viewModel.plans.collectAsState()
+    val showQuickTimer by viewModel.showQuickTimer.collectAsState()
 
     Scaffold(
         topBar = {
@@ -170,9 +171,11 @@ fun PlanListScreen(
                 ) {
                     item { Spacer(modifier = Modifier.height(4.dp)) }
 
-                    // Quick Timer button
-                    item {
-                        QuickTimerCard(onClick = onOpenQuickTimer)
+                    // Quick Timer button (conditionally shown)
+                    if (showQuickTimer) {
+                        item {
+                            QuickTimerCard(onClick = onOpenQuickTimer)
+                        }
                     }
 
                     items(plans, key = { it.id }) { plan ->

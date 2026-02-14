@@ -3,6 +3,8 @@ package com.stopwatch.app.data.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import com.stopwatch.app.data.model.ExerciseCategoryBreakdown
+import com.stopwatch.app.data.model.ExerciseStats
 import com.stopwatch.app.data.model.MonthlyStats
 import com.stopwatch.app.data.model.WorkoutBreakdown
 import com.stopwatch.app.data.model.WorkoutHistory
@@ -40,6 +42,38 @@ interface WorkoutHistoryDao {
         """
     )
     fun getMonthlyBreakdown(yearMonth: String): Flow<List<WorkoutBreakdown>>
+
+    @Query(
+        """
+        SELECT e.category,
+               COUNT(DISTINCT we.exerciseId) AS exerciseCount,
+               COUNT(DISTINCT wh.id) AS sessionCount
+        FROM workout_history wh
+        INNER JOIN workout_exercises we ON wh.planId = we.workoutPlanId
+        INNER JOIN exercises e ON we.exerciseId = e.id
+        WHERE strftime('%Y-%m', wh.completedAt / 1000, 'unixepoch', 'localtime') = :yearMonth
+        GROUP BY e.category
+        ORDER BY exerciseCount DESC
+        """
+    )
+    fun getMonthlyExerciseCategoryBreakdown(yearMonth: String): Flow<List<ExerciseCategoryBreakdown>>
+
+    @Query(
+        """
+        SELECT e.name AS exerciseName,
+               e.category,
+               COUNT(DISTINCT wh.id) AS sessionCount,
+               e.imagePath
+        FROM workout_history wh
+        INNER JOIN workout_exercises we ON wh.planId = we.workoutPlanId
+        INNER JOIN exercises e ON we.exerciseId = e.id
+        WHERE strftime('%Y-%m', wh.completedAt / 1000, 'unixepoch', 'localtime') = :yearMonth
+        GROUP BY e.id
+        ORDER BY sessionCount DESC
+        LIMIT 10
+        """
+    )
+    fun getTopExercises(yearMonth: String): Flow<List<ExerciseStats>>
 
     @Query(
         """

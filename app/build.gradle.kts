@@ -62,6 +62,9 @@ dependencies {
     // Material Icons Extended
     implementation("androidx.compose.material:material-icons-extended")
 
+    // Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
     // Splash Screen
     implementation("androidx.core:core-splashscreen:1.0.1")
 

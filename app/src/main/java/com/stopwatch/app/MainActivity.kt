@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
+import com.stopwatch.app.data.ExerciseLibraryInitializer
 import com.stopwatch.app.data.UserPreferencesRepository
 import com.stopwatch.app.navigation.AppNavGraph
 import com.stopwatch.app.notification.DailyReminderWorker
@@ -37,6 +38,11 @@ class MainActivity : ComponentActivity() {
 
         // Initialize notification channels
         WorkoutNotificationManager(this)
+
+        // Initialize exercise library from assets
+        lifecycleScope.launch {
+            ExerciseLibraryInitializer(applicationContext).initializeIfNeeded()
+        }
 
         // Request notification permission for Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

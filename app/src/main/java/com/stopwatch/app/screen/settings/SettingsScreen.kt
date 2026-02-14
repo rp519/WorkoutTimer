@@ -16,8 +16,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -62,10 +64,12 @@ fun SettingsScreen(
     val achievementNotificationsEnabled by viewModel.achievementNotificationsEnabled.collectAsState()
     val emailSummaryEnabled by viewModel.emailSummaryEnabled.collectAsState()
     val emailFrequency by viewModel.emailFrequency.collectAsState()
+    val showQuickTimer by viewModel.showQuickTimer.collectAsState()
 
     var showEmailDialog by remember { mutableStateOf(false) }
     var showTimePickerDialog by remember { mutableStateOf(false) }
     var showFrequencyDialog by remember { mutableStateOf(false) }
+    var isSendingTestEmail by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -132,6 +136,39 @@ fun SettingsScreen(
                             Switch(
                                 checked = keepScreenOn,
                                 onCheckedChange = viewModel::setKeepScreenOn
+                            )
+                        }
+                    }
+                }
+
+                // Show Quick Timer Toggle
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Show Quick Timer",
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Display Quick Timer button on home screen",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Switch(
+                                checked = showQuickTimer,
+                                onCheckedChange = viewModel::setShowQuickTimer
                             )
                         }
                     }
@@ -359,6 +396,69 @@ fun SettingsScreen(
                                 enabled = emailSummaryEnabled
                             ) {
                                 Text("Change")
+                            }
+                        }
+                    }
+                }
+
+                // Send Test Email Button
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Text(
+                                text = "Test Email",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Send a test email to verify your email configuration",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Button(
+                                onClick = {
+                                    isSendingTestEmail = true
+                                    scope.launch {
+                                        val success = viewModel.sendTestEmail()
+                                        isSendingTestEmail = false
+                                        if (success) {
+                                            snackbarHostState.showSnackbar("✅ Test email sent successfully!")
+                                        } else {
+                                            snackbarHostState.showSnackbar("❌ Failed to send test email. Check your email settings and workout data.")
+                                        }
+                                    }
+                                },
+                                enabled = !userEmail.isNullOrBlank() && !isSendingTestEmail,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                if (isSendingTestEmail) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        strokeWidth = 2.dp
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Sending...")
+                                } else {
+                                    Text("Send Test Email")
+                                }
+                            }
+                            if (userEmail.isNullOrBlank()) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "⚠️ Set your email address first",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.error
+                                )
                             }
                         }
                     }

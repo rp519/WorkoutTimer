@@ -65,6 +65,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         "weekly"
     )
 
+    val showQuickTimer = preferencesRepository.showQuickTimer.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        true
+    )
+
     fun setKeepScreenOn(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.setKeepScreenOn(enabled)
@@ -123,6 +129,27 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             preferencesRepository.setEmailFrequency(frequency)
         }
     }
+
+    fun setShowQuickTimer(enabled: Boolean) {
+        viewModelScope.launch {
+            preferencesRepository.setShowQuickTimer(enabled)
+        }
+    }
+
+    // Send test email
+    suspend fun sendTestEmail(): Boolean {
+        return try {
+            Log.d("SettingsViewModel", "Sending test email...")
+            val emailService = EmailService(getApplication())
+            val success = emailService.sendWorkoutSummary()
+            Log.d("SettingsViewModel", "Test email result: $success")
+            success
+        } catch (e: Exception) {
+            Log.e("SettingsViewModel", "Failed to send test email", e)
+            false
+        }
+    }
+
     // Debug function - shows what would be in the email
     fun getDebugInfo(onResult: (String) -> Unit) {
         viewModelScope.launch {

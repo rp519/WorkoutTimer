@@ -154,6 +154,10 @@ object EmailDebugHelper {
             val ytdDuration = formatDuration(currentYearData?.totalSeconds ?: 0)
             val currentMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("MMMM yyyy"))
 
+            // Get workout breakdown and exercise category breakdown
+            val workoutBreakdown = historyDao.getMonthlyBreakdown(currentMonthData.yearMonth).first()
+            val exerciseCategoryBreakdown = historyDao.getMonthlyExerciseCategoryBreakdown(currentMonthData.yearMonth).first()
+
             EmailTemplate.generateWorkoutSummaryEmail(
                 userName = "Test User",
                 currentMonth = currentMonth,
@@ -165,7 +169,9 @@ object EmailDebugHelper {
                 ytdRounds = currentYearData?.totalRounds ?: 0,
                 ytdDuration = ytdDuration,
                 ytdActiveDays = currentYearData?.activeDays ?: 0,
-                mostUsedWorkout = mostUsedWorkout?.planName
+                mostUsedWorkout = mostUsedWorkout?.planName,
+                workoutBreakdown = workoutBreakdown,
+                exerciseCategoryBreakdown = exerciseCategoryBreakdown
             )
         } catch (e: Exception) {
             Log.e(TAG, "Failed to generate sample HTML", e)

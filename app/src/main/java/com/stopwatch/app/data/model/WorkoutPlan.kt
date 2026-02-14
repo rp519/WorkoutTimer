@@ -10,5 +10,10 @@ data class WorkoutPlan(
     val rounds: Int,
     val exerciseCount: Int,
     val workSeconds: Int,
-    val restSeconds: Int
+    val restSeconds: Int,
+
+    // New fields for workout modes feature
+    val workoutMode: WorkoutMode = WorkoutMode.SIMPLE,  // Workout type: SIMPLE, LIBRARY, or CUSTOM
+    val prepTimeSeconds: Int = 30,                      // Preparation time before workout starts
+    val hasExercises: Boolean = false                   // Quick flag indicating if workout has selected exercises
 )

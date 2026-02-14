@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -61,7 +62,7 @@ fun SplashScreen(onTimeout: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Gradients.Primary),  // Premium blue gradient
+            .background(Color(0xFFF5EFE6)),  // Cream/beige background matching logo
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -71,20 +72,21 @@ fun SplashScreen(onTimeout: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // New WT logo with goat
             Icon(
-                Icons.Default.Timer,
-                contentDescription = null,
-                modifier = Modifier.size(80.dp),
-                tint = Color.White
+                painter = painterResource(id = R.drawable.wt_logo),
+                contentDescription = "Workout Timer Logo",
+                modifier = Modifier.size(180.dp),
+                tint = Color.Unspecified  // Use original logo colors
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = stringResource(R.string.splash_title),
+                text = "Workout Timer",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = Color(0xFF2E5C8A)  // Dark blue matching logo
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -92,7 +94,7 @@ fun SplashScreen(onTimeout: () -> Unit) {
             Text(
                 text = stringResource(R.string.splash_author),
                 fontSize = 16.sp,
-                color = Color.White.copy(alpha = 0.8f)
+                color = Color(0xFF5B8BB8)  // Medium blue matching logo
             )
         }
     }

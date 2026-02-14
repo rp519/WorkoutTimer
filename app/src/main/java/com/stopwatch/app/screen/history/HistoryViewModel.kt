@@ -48,4 +48,16 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
         SharingStarted.WhileSubscribed(5000),
         null
     )
+
+    val exerciseCategoryBreakdown = historyDao.getMonthlyExerciseCategoryBreakdown(currentYearMonth).stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList()
+    )
+
+    val topExercises = historyDao.getTopExercises(currentYearMonth).stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList()
+    )
 }

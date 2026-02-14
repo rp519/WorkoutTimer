@@ -14,7 +14,8 @@ object EmailTemplate {
         ytdDuration: String,
         ytdActiveDays: Int,
         mostUsedWorkout: String?,
-        workoutBreakdown: List<com.stopwatch.app.data.model.WorkoutBreakdown> = emptyList()
+        workoutBreakdown: List<com.stopwatch.app.data.model.WorkoutBreakdown> = emptyList(),
+        exerciseCategoryBreakdown: List<com.stopwatch.app.data.model.ExerciseCategoryBreakdown> = emptyList()
     ): String {
         val displayName = userName ?: "Champion"
 
@@ -92,6 +93,38 @@ object EmailTemplate {
                             </table>
                         </td>
                     </tr>
+
+                    <!-- Exercise Category Breakdown Section -->
+                    ${if (exerciseCategoryBreakdown.isNotEmpty()) """
+                    <tr>
+                        <td style="padding: 20px 30px;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #E3F2FD; border-radius: 12px; padding: 20px;">
+                                <tr>
+                                    <td>
+                                        <h2 style="margin: 0 0 15px 0; color: #0D47A1; font-size: 20px; font-weight: 600;">💪 Exercise Breakdown by Category</h2>
+                                        <div style="background-color: #ffffff; border-radius: 8px; padding: 15px; margin-bottom: 10px;">
+                                            <div style="font-size: 14px; color: #666666; line-height: 1.8;">
+                                                ${exerciseCategoryBreakdown.mapIndexed { index, category ->
+                                                    val emoji = when (category.category.lowercase()) {
+                                                        "abs" -> "🔥"
+                                                        "chest" -> "💪"
+                                                        "legs" -> "🦵"
+                                                        "back" -> "💪"
+                                                        "arms" -> "💪"
+                                                        "shoulders" -> "💪"
+                                                        "cardio" -> "❤️"
+                                                        else -> "✓"
+                                                    }
+                                                    """<strong style="color: #0D47A1;">$emoji ${category.exerciseCount} ${category.category}</strong> exercise${if (category.exerciseCount != 1) "s" else ""}${if (index < exerciseCategoryBreakdown.size - 1) ", " else ""}"""
+                                                }.joinToString("")}
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    """ else ""}
 
                     <!-- Workout Breakdown Section -->
                     ${if (workoutBreakdown.isNotEmpty()) """

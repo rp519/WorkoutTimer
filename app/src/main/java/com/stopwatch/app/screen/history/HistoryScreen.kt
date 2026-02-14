@@ -40,6 +40,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.stopwatch.app.R
+import com.stopwatch.app.data.model.ExerciseCategoryBreakdown
+import com.stopwatch.app.data.model.ExerciseStats
 import com.stopwatch.app.data.model.MonthlyStats
 import com.stopwatch.app.data.model.WorkoutBreakdown
 import com.stopwatch.app.data.model.WorkoutHistory
@@ -65,6 +67,8 @@ fun HistoryScreen(
     val yearlyStats by viewModel.yearlyStats.collectAsState()
     val currentMonthBreakdown by viewModel.currentMonthBreakdown.collectAsState()
     val mostUsedWorkout by viewModel.mostUsedWorkout.collectAsState()
+    val exerciseCategoryBreakdown by viewModel.exerciseCategoryBreakdown.collectAsState()
+    val topExercises by viewModel.topExercises.collectAsState()
 
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf(stringResource(R.string.history), stringResource(R.string.progress))
@@ -110,7 +114,14 @@ fun HistoryScreen(
             ) {
                 when (selectedTab) {
                     0 -> HistoryTab(history, monthlyStats)
-                    1 -> ProgressTab(monthlyStats, currentMonthBreakdown, yearlyStats, mostUsedWorkout)
+                    1 -> ProgressTab(
+                        monthlyStats,
+                        currentMonthBreakdown,
+                        yearlyStats,
+                        mostUsedWorkout,
+                        exerciseCategoryBreakdown,
+                        topExercises
+                    )
                 }
             }
         }
@@ -176,7 +187,9 @@ private fun ProgressTab(
     monthlyStats: List<MonthlyStats>,
     currentMonthBreakdown: List<WorkoutBreakdown>,
     yearlyStats: List<YearlyStats>,
-    mostUsedWorkout: WorkoutBreakdown?
+    mostUsedWorkout: WorkoutBreakdown?,
+    exerciseCategoryBreakdown: List<ExerciseCategoryBreakdown>,
+    topExercises: List<ExerciseStats>
 ) {
     if (monthlyStats.isEmpty()) {
         Box(
@@ -275,6 +288,36 @@ private fun ProgressTab(
                 }
                 items(currentMonthBreakdown) { breakdown ->
                     BreakdownCard(breakdown)
+                }
+            }
+
+            // Exercise Category Breakdown
+            if (exerciseCategoryBreakdown.isNotEmpty()) {
+                item {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Exercise Categories",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
+                item {
+                    ExerciseCategoryCard(exerciseCategoryBreakdown)
+                }
+            }
+
+            // Top Exercises
+            if (topExercises.isNotEmpty()) {
+                item {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Most Frequent Exercises",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
+                items(topExercises.take(5)) { exercise ->
+                    TopExerciseCard(exercise)
                 }
             }
 
@@ -450,5 +493,128 @@ private fun StatItem(label: String, value: String) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+    }
+}
+
+@Composable
+private fun ExerciseCategoryCard(categories: List<ExerciseCategoryBreakdown>) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Exercises by Muscle Group",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+
+            categories.forEach { category ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = getCategoryEmoji(category.category),
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text(
+                            text = category.category.replaceFirstChar { it.uppercase() },
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = "${category.exerciseCount} exercise${if (category.exerciseCount != 1) "s" else ""}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "${category.sessionCount} session${if (category.sessionCount != 1) "s" else ""}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                if (category != categories.last()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TopExerciseCard(exercise: ExerciseStats) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = exercise.exerciseName,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = getCategoryEmoji(exercise.category),
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(end = 4.dp)
+                    )
+                    Text(
+                        text = exercise.category.replaceFirstChar { it.uppercase() },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = "${exercise.sessionCount}",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "session${if (exercise.sessionCount != 1) "s" else ""}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+private fun getCategoryEmoji(category: String): String {
+    return when (category.lowercase()) {
+        "abs" -> "🔥"
+        "chest" -> "💪"
+        "legs" -> "🦵"
+        "back" -> "💪"
+        "arms" -> "💪"
+        "shoulders" -> "💪"
+        "cardio" -> "❤️"
+        else -> "✓"
     }
 }

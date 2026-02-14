@@ -27,6 +27,7 @@ class UserPreferencesRepository(private val context: Context) {
         val EMAIL_SUMMARY_ENABLED = booleanPreferencesKey("email_summary_enabled")
         val EMAIL_FREQUENCY = stringPreferencesKey("email_frequency") // "weekly", "biweekly", "monthly"
         val LAST_EMAIL_SENT = longPreferencesKey("last_email_sent")
+        val SHOW_QUICK_TIMER = booleanPreferencesKey("show_quick_timer")
     }
 
     val keepScreenOn: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -67,6 +68,10 @@ class UserPreferencesRepository(private val context: Context) {
 
     val lastEmailSent: Flow<Long> = context.dataStore.data.map { preferences ->
         preferences[PreferencesKeys.LAST_EMAIL_SENT] ?: 0L
+    }
+
+    val showQuickTimer: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.SHOW_QUICK_TIMER] ?: true // Default ON for existing users
     }
 
     suspend fun setKeepScreenOn(enabled: Boolean) {
@@ -125,6 +130,12 @@ class UserPreferencesRepository(private val context: Context) {
     suspend fun setLastEmailSent(timestamp: Long) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.LAST_EMAIL_SENT] = timestamp
+        }
+    }
+
+    suspend fun setShowQuickTimer(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SHOW_QUICK_TIMER] = enabled
         }
     }
 }

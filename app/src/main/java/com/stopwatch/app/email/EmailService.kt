@@ -59,9 +59,13 @@ class EmailService(private val context: Context) {
             }
             Log.d(TAG, "✓ Current month: ${currentMonthData.yearMonth}, workouts: ${currentMonthData.count}")
 
-            // Get workout breakdown by type for current month
+            // Get workout breakdown by plan name for current month
             val workoutBreakdown = historyDao.getMonthlyBreakdown(currentMonthData.yearMonth).first()
             Log.d(TAG, "✓ Workout breakdown: ${workoutBreakdown.size} different workout types")
+
+            // Get exercise breakdown by category for current month
+            val exerciseCategoryBreakdown = historyDao.getMonthlyExerciseCategoryBreakdown(currentMonthData.yearMonth).first()
+            Log.d(TAG, "✓ Exercise category breakdown: ${exerciseCategoryBreakdown.size} categories")
 
             // Calculate current streak
             val currentStreak = calculateCurrentStreak(allHistory)
@@ -78,7 +82,7 @@ class EmailService(private val context: Context) {
             val userName = userEmail.substringBefore("@").split(".", "_", "-")
                 .joinToString(" ") { it.capitalize() }
 
-            // Generate email HTML with workout breakdown
+            // Generate email HTML with workout breakdown and exercise category breakdown
             val emailHtml = EmailTemplate.generateWorkoutSummaryEmail(
                 userName = userName,
                 currentMonth = currentMonth,
@@ -91,7 +95,8 @@ class EmailService(private val context: Context) {
                 ytdDuration = ytdDuration,
                 ytdActiveDays = currentYearData?.activeDays ?: 0,
                 mostUsedWorkout = mostUsedWorkout?.planName,
-                workoutBreakdown = workoutBreakdown
+                workoutBreakdown = workoutBreakdown,
+                exerciseCategoryBreakdown = exerciseCategoryBreakdown
             )
 
             // Generate subject line
@@ -119,7 +124,8 @@ class EmailService(private val context: Context) {
                 ytdDuration = ytdDuration,
                 ytdActiveDays = currentYearData?.activeDays ?: 0,
                 mostUsedWorkout = mostUsedWorkout?.planName,
-                workoutBreakdown = workoutBreakdown
+                workoutBreakdown = workoutBreakdown,
+                exerciseCategoryBreakdown = exerciseCategoryBreakdown
             )
 
             if (success) {
@@ -150,7 +156,8 @@ class EmailService(private val context: Context) {
         ytdDuration: String,
         ytdActiveDays: Int,
         mostUsedWorkout: String?,
-        workoutBreakdown: List<com.stopwatch.app.data.model.WorkoutBreakdown>
+        workoutBreakdown: List<com.stopwatch.app.data.model.WorkoutBreakdown>,
+        exerciseCategoryBreakdown: List<com.stopwatch.app.data.model.ExerciseCategoryBreakdown>
     ): Boolean {
         return withContext(Dispatchers.IO) {
             try {
@@ -194,6 +201,16 @@ class EmailService(private val context: Context) {
                             })
                         }
                     })
+                    // Add exercise category breakdown array
+                    put("exerciseCategoryBreakdown", org.json.JSONArray().apply {
+                        exerciseCategoryBreakdown.forEach { categoryBreakdown ->
+                            put(JSONObject().apply {
+                                put("category", categoryBreakdown.category)
+                                put("exerciseCount", categoryBreakdown.exerciseCount)
+                                put("sessionCount", categoryBreakdown.sessionCount)
+                            })
+                        }
+                    })
                     // Also include nested workoutData for backward compatibility
                     put("workoutData", JSONObject().apply {
                         put("userName", userName)
@@ -218,6 +235,16 @@ class EmailService(private val context: Context) {
                                 })
                             }
                         })
+                        // Add exercise category breakdown inside workoutData as well
+                        put("exerciseCategoryBreakdown", org.json.JSONArray().apply {
+                            exerciseCategoryBreakdown.forEach { categoryBreakdown ->
+                                put(JSONObject().apply {
+                                    put("category", categoryBreakdown.category)
+                                    put("exerciseCount", categoryBreakdown.exerciseCount)
+                                    put("sessionCount", categoryBreakdown.sessionCount)
+                                })
+                            }
+                        })
                     })
                 }
 
@@ -226,8 +253,13 @@ class EmailService(private val context: Context) {
                 workoutBreakdown.forEach {
                     Log.d(TAG, "  - ${it.planName}: ${it.count} sessions, ${formatDuration(it.totalSeconds)}")
                 }
+                Log.d(TAG, "exerciseCategoryBreakdown count: ${exerciseCategoryBreakdown.size}")
+                exerciseCategoryBreakdown.forEach {
+                    Log.d(TAG, "  - ${it.category}: ${it.exerciseCount} exercises, ${it.sessionCount} sessions")
+                }
                 Log.d(TAG, "workoutData object: ${jsonBody.getJSONObject("workoutData")}")
                 Log.d(TAG, "workoutBreakdown in JSON: ${jsonBody.getJSONArray("workoutBreakdown")}")
+                Log.d(TAG, "exerciseCategoryBreakdown in JSON: ${jsonBody.getJSONArray("exerciseCategoryBreakdown")}")
 
                 OutputStreamWriter(connection.outputStream).use { writer ->
                     writer.write(jsonBody.toString())
