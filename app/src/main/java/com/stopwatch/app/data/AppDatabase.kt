@@ -26,7 +26,7 @@ import com.stopwatch.app.data.model.WorkoutPlan
         WorkoutExercise::class,
         CustomExercise::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -106,6 +106,21 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add new fields to exercises table for enhanced exercise data
+                db.execSQL("ALTER TABLE exercises ADD COLUMN subcategory TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE exercises ADD COLUMN durationMin INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE exercises ADD COLUMN durationMax INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE exercises ADD COLUMN intensity TEXT NOT NULL DEFAULT 'MEDIUM'")
+                db.execSQL("ALTER TABLE exercises ADD COLUMN targetMuscles TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE exercises ADD COLUMN equipment TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE exercises ADD COLUMN caloriesPerMin REAL NOT NULL DEFAULT 0.0")
+                db.execSQL("ALTER TABLE exercises ADD COLUMN description TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE exercises ADD COLUMN tier TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
@@ -113,7 +128,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "workout_timer.db"
                 )
-                    .addMigrations(MIGRATION_5_6, MIGRATION_6_7)
+                    .addMigrations(MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                     .build()
                     .also { INSTANCE = it }
             }

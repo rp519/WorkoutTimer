@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -113,6 +114,7 @@ fun PlanListScreen(
     onOpenHistory: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenQuickTimer: () -> Unit,
+    onBrowseExercises: () -> Unit,
     viewModel: PlanListViewModel = viewModel()
 ) {
     val plans by viewModel.plans.collectAsState()
@@ -123,6 +125,9 @@ fun PlanListScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.your_workouts)) },
                 actions = {
+                    IconButton(onClick = onBrowseExercises) {
+                        Icon(Icons.Default.FitnessCenter, contentDescription = "Browse Exercises")
+                    }
                     IconButton(onClick = onOpenHistory) {
                         Icon(Icons.Default.History, contentDescription = stringResource(R.string.history))
                     }
