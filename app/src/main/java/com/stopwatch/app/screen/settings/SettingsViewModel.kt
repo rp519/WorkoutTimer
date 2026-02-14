@@ -3,10 +3,7 @@ package com.stopwatch.app.screen.settings
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import android.util.Log
 import com.stopwatch.app.data.UserPreferencesRepository
-import com.stopwatch.app.email.EmailDebugHelper
-import com.stopwatch.app.email.EmailService
 import com.stopwatch.app.email.EmailSummaryWorker
 import com.stopwatch.app.notification.DailyReminderWorker
 import kotlinx.coroutines.flow.SharingStarted
@@ -136,25 +133,4 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    // Send test email
-    suspend fun sendTestEmail(): Boolean {
-        return try {
-            Log.d("SettingsViewModel", "Sending test email...")
-            val emailService = EmailService(getApplication())
-            val success = emailService.sendWorkoutSummary()
-            Log.d("SettingsViewModel", "Test email result: $success")
-            success
-        } catch (e: Exception) {
-            Log.e("SettingsViewModel", "Failed to send test email", e)
-            false
-        }
-    }
-
-    // Debug function - shows what would be in the email
-    fun getDebugInfo(onResult: (String) -> Unit) {
-        viewModelScope.launch {
-            val info = EmailDebugHelper.debugEmailData(getApplication())
-            onResult(info)
-        }
-    }
 }
