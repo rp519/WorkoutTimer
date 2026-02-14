@@ -34,14 +34,9 @@ fun ExerciseCategoriesScreen(
     onSearchClick: () -> Unit,
     viewModel: ExerciseBrowseViewModel = viewModel()
 ) {
-    var categories by remember { mutableStateOf<List<ExerciseCategory>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
-
-    // Load categories when screen opens
-    LaunchedEffect(Unit) {
-        categories = viewModel.getCategories()
-        isLoading = false
-    }
+    // Observe categories from ViewModel - no LaunchedEffect needed!
+    val categories by viewModel.categories.collectAsState()
+    val isLoading by viewModel.isLoadingCategories.collectAsState()
 
     Scaffold(
         topBar = {

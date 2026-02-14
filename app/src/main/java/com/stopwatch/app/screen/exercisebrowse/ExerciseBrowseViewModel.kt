@@ -57,31 +57,66 @@ class ExerciseBrowseViewModel(application: Application) : AndroidViewModel(appli
         emptyList()
     )
 
-    /**
-     * Get all categories with exercise counts
-     */
-    suspend fun getCategories(): List<ExerciseCategory> {
-        return ExerciseCategories.getAllCategories().map { category ->
-            ExerciseCategory(
-                name = category,
-                displayName = ExerciseCategories.getDisplayName(category),
-                exerciseCount = exerciseDao.getExerciseCountByCategory(category),
-                subcategories = ExerciseCategories.getSubcategories(category)
-            )
-        }
+    // Categories state - loaded once and cached
+    private val _categories = MutableStateFlow<List<ExerciseCategory>>(emptyList())
+    val categories: StateFlow<List<ExerciseCategory>> = _categories
+
+    private val _isLoadingCategories = MutableStateFlow(true)
+    val isLoadingCategories: StateFlow<Boolean> = _isLoadingCategories
+
+    init {
+        // Load categories immediately when ViewModel is created
+        loadCategories()
     }
 
     /**
-     * Get subcategories for a specific category with exercise counts
+     * Load all categories with exercise counts (called once in init)
      */
-    suspend fun getSubcategories(category: String): List<ExerciseSubcategory> {
-        val subcategoryNames = ExerciseCategories.getSubcategories(category)
-        return subcategoryNames.map { subcategory ->
-            ExerciseSubcategory(
-                name = subcategory,
-                parentCategory = category,
-                exerciseCount = exerciseDao.getExerciseCountBySubcategory(category, subcategory)
-            )
+    private fun loadCategories() {
+        viewModelScope.launch {
+            try {
+                _isLoadingCategories.value = true
+                val categoriesList = ExerciseCategories.getAllCategories().map { category ->
+                    ExerciseCategory(
+                        name = category,
+                        displayName = ExerciseCategories.getDisplayName(category),
+                        exerciseCount = exerciseDao.getExerciseCountByCategory(category),
+                        subcategories = ExerciseCategories.getSubcategories(category)
+                    )
+                }
+                _categories.value = categoriesList
+            } finally {
+                _isLoadingCategories.value = false
+            }
+        }
+    }
+
+    // Subcategories state for currently selected category
+    private val _subcategories = MutableStateFlow<List<ExerciseSubcategory>>(emptyList())
+    val subcategories: StateFlow<List<ExerciseSubcategory>> = _subcategories
+
+    private val _isLoadingSubcategories = MutableStateFlow(false)
+    val isLoadingSubcategories: StateFlow<Boolean> = _isLoadingSubcategories
+
+    /**
+     * Load subcategories for a specific category with exercise counts
+     */
+    fun loadSubcategories(category: String) {
+        viewModelScope.launch {
+            try {
+                _isLoadingSubcategories.value = true
+                val subcategoryNames = ExerciseCategories.getSubcategories(category)
+                val subcategoriesList = subcategoryNames.map { subcategory ->
+                    ExerciseSubcategory(
+                        name = subcategory,
+                        parentCategory = category,
+                        exerciseCount = exerciseDao.getExerciseCountBySubcategory(category, subcategory)
+                    )
+                }
+                _subcategories.value = subcategoriesList
+            } finally {
+                _isLoadingSubcategories.value = false
+            }
         }
     }
 

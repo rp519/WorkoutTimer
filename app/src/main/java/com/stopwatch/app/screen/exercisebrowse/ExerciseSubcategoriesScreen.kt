@@ -40,14 +40,14 @@ fun ExerciseSubcategoriesScreen(
     onSubcategoryClick: (String, String) -> Unit,
     viewModel: ExerciseBrowseViewModel = viewModel()
 ) {
-    var subcategories by remember { mutableStateOf<List<ExerciseSubcategory>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
+    // Observe subcategories from ViewModel - no LaunchedEffect needed!
+    val subcategories by viewModel.subcategories.collectAsState()
+    val isLoading by viewModel.isLoadingSubcategories.collectAsState()
     val categoryDisplayName = ExerciseCategories.getDisplayName(category)
 
-    // Load subcategories when screen opens
+    // Load subcategories when category changes
     LaunchedEffect(category) {
-        subcategories = viewModel.getSubcategories(category)
-        isLoading = false
+        viewModel.loadSubcategories(category)
     }
 
     Scaffold(
