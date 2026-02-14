@@ -108,7 +108,7 @@ fun ExerciseDetailScreen(
                     // Exercise name
                     Text(
                         text = ex.name,
-                        style = MaterialTheme.typography.headlineMedium,
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
 
@@ -211,7 +211,7 @@ private fun MetricCard(
         ) {
             Text(
                 text = value,
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
@@ -244,7 +244,7 @@ private fun DetailSection(
         )
         Text(
             text = content,
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
     }

@@ -156,7 +156,7 @@ fun ExerciseSelectionSheet(
                         SheetView.EXERCISES -> selectedSubcategory ?: "Exercises"
                         SheetView.SEARCH -> "Search Exercises"
                     },
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
                 )
 

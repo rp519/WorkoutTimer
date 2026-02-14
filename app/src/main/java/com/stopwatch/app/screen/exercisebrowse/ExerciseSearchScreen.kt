@@ -111,8 +111,8 @@ fun ExerciseSearchScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = "Search for exercises",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(

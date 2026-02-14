@@ -129,14 +129,14 @@ private fun CategoryCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = category.displayName,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "${category.exerciseCount} exercise${if (category.exerciseCount != 1) "s" else ""}",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 if (category.subcategories.isNotEmpty()) {
