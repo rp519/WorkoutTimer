@@ -293,10 +293,12 @@ class ActiveTimerViewModel(application: Application) : AndroidViewModel(applicat
                 }
             }
 
-            // Finished — save and navigate immediately to completion screen
+            // Finished — save and navigate to completion screen
             saveHistory()
             soundManager.speakWorkoutComplete()
             soundManager.playWorkoutComplete()
+            // Small delay to let sound start and stabilize before navigation
+            delay(500L)
             isFinished = true
         }
     }
