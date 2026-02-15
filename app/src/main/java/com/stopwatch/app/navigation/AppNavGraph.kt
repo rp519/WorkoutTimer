@@ -21,11 +21,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import com.stopwatch.app.data.UserPreferencesRepository
 import androidx.compose.runtime.remember
-import com.stopwatch.app.screen.exercisebrowse.ExerciseCategoriesScreen
-import com.stopwatch.app.screen.exercisebrowse.ExerciseSubcategoriesScreen
-import com.stopwatch.app.screen.exercisebrowse.ExerciseListScreen
-import com.stopwatch.app.screen.exercisebrowse.ExerciseDetailScreen
-import com.stopwatch.app.screen.exercisebrowse.ExerciseSearchScreen
 
 @Composable
 fun AppNavGraph(navController: NavHostController) {
@@ -80,9 +75,6 @@ fun AppNavGraph(navController: NavHostController) {
                 },
                 onOpenQuickTimer = {
                     navController.navigate(Screen.QuickTimer.route)
-                },
-                onBrowseExercises = {
-                    navController.navigate(Screen.ExerciseCategories.route)
                 }
             )
         }
@@ -153,72 +145,6 @@ fun AppNavGraph(navController: NavHostController) {
         composable(Screen.QuickTimer.route) {
             QuickTimerScreen(
                 onBack = { navController.popBackStack() }
-            )
-        }
-
-        // Exercise browsing screens
-        composable(Screen.ExerciseCategories.route) {
-            ExerciseCategoriesScreen(
-                onBack = { navController.popBackStack() },
-                onCategoryClick = { category ->
-                    navController.navigate(Screen.ExerciseSubcategories.createRoute(category))
-                },
-                onSearchClick = {
-                    navController.navigate(Screen.ExerciseSearch.route)
-                }
-            )
-        }
-
-        composable(
-            route = Screen.ExerciseSubcategories.route,
-            arguments = listOf(navArgument("category") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val category = backStackEntry.arguments?.getString("category") ?: return@composable
-            ExerciseSubcategoriesScreen(
-                category = category,
-                onBack = { navController.popBackStack() },
-                onSubcategoryClick = { cat, subcat ->
-                    navController.navigate(Screen.ExerciseList.createRoute(cat, subcat))
-                }
-            )
-        }
-
-        composable(
-            route = Screen.ExerciseList.route,
-            arguments = listOf(
-                navArgument("category") { type = NavType.StringType },
-                navArgument("subcategory") { type = NavType.StringType }
-            )
-        ) { backStackEntry ->
-            val category = backStackEntry.arguments?.getString("category") ?: return@composable
-            val subcategory = backStackEntry.arguments?.getString("subcategory") ?: return@composable
-            ExerciseListScreen(
-                category = category,
-                subcategory = subcategory,
-                onBack = { navController.popBackStack() },
-                onExerciseClick = { exerciseId ->
-                    navController.navigate(Screen.ExerciseDetail.createRoute(exerciseId))
-                }
-            )
-        }
-
-        composable(
-            route = Screen.ExerciseDetail.route,
-            arguments = listOf(navArgument("exerciseId") { type = NavType.LongType })
-        ) { backStackEntry ->
-            val exerciseId = backStackEntry.arguments?.getLong("exerciseId") ?: return@composable
-            ExerciseDetailScreen(
-                exerciseId = exerciseId,
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        composable(Screen.ExerciseSearch.route) {
-            ExerciseSearchScreen(
-                onBack = { navController.popBackStack() },
-                onExerciseClick = { exerciseId ->
-                    navController.navigate(Screen.ExerciseDetail.createRoute(exerciseId))
-                }
             )
         }
     }
