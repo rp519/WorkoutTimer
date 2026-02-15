@@ -1,7 +1,6 @@
 package com.stopwatch.app.screen.workoutcomplete
 
 import android.app.Activity
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -50,11 +49,6 @@ fun WorkoutCompleteScreen(
 
     LaunchedEffect(planId) {
         viewModel.load(planId)
-    }
-
-    // Handle back button press - same as Exit
-    BackHandler {
-        (context as? Activity)?.finishAffinity()
     }
 
     val minutes = durationSeconds / 60
