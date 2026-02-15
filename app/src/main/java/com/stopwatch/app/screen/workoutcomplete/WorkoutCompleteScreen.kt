@@ -92,7 +92,7 @@ fun WorkoutCompleteScreen(
             // Celebration text
             Text(
                 text = "🎉 " + stringResource(R.string.workout_complete) + " 🎉",
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
 
@@ -108,9 +108,8 @@ fun WorkoutCompleteScreen(
 
             Text(
                 text = viewModel.planName,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
             )
 
             Spacer(modifier = Modifier.height(32.dp))
