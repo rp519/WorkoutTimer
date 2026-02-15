@@ -293,12 +293,10 @@ class ActiveTimerViewModel(application: Application) : AndroidViewModel(applicat
                 }
             }
 
-            // Finished — play sounds and save before navigating away
-            phase = TimerPhase.FINISHED
+            // Finished — save and navigate immediately to completion screen
             saveHistory()
             soundManager.speakWorkoutComplete()
             soundManager.playWorkoutComplete()
-            delay(3000L) // let TTS finish before navigation
             isFinished = true
         }
     }
