@@ -93,8 +93,7 @@ fun WorkoutCompleteScreen(
             Text(
                 text = "🎉 " + stringResource(R.string.workout_complete) + " 🎉",
                 style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                fontWeight = FontWeight.Bold
             )
 
             Spacer(modifier = Modifier.height(12.dp))
